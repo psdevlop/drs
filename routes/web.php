@@ -6,6 +6,7 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\DailyReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +46,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/calendar/reports/data', [CalendarController::class, 'reports'])->name('calendar.reports.data');
     Route::get('/schedule', [CalendarController::class, 'schedule'])->name('schedule');
     Route::get('/schedule/data', [CalendarController::class, 'scheduleData'])->name('schedule.data');
+
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
 
     // Tasks
     Route::resource('tasks', TaskController::class);

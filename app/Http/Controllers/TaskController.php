@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notification;
 use App\Models\Task;
 use App\Models\TaskAttachment;
 use App\Models\User;
@@ -56,6 +57,31 @@ class TaskController extends Controller
 
         $this->handleAttachments($request, $task);
 
+        // Notify assigned user
+        if ($task->assigned_to && $task->assigned_to !== $request->user()->id) {
+            Notification::create([
+                'user_id' => $task->assigned_to,
+                'type' => 'task_assigned',
+                'title' => __('messages.notif_task_assigned_title'),
+                'message' => __('messages.notif_task_assigned_message', ['task' => $task->title, 'user' => $request->user()->name]),
+                'link' => route('tasks.show', $task),
+            ]);
+        }
+
+        // Notify admins about new task
+        $admins = User::where('role', '!=', 'user')->where('id', '!=', $request->user()->id)->get();
+        foreach ($admins as $admin) {
+            if ($admin->id !== $task->assigned_to) {
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'type' => 'task_created',
+                    'title' => __('messages.notif_task_created_title'),
+                    'message' => __('messages.notif_task_created_message', ['task' => $task->title, 'user' => $request->user()->name]),
+                    'link' => route('tasks.show', $task),
+                ]);
+            }
+        }
+
         return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
     }
 
@@ -100,6 +126,28 @@ class TaskController extends Controller
 
         $this->handleAttachments($request, $task);
 
+        // Notify task owner if updated by someone else
+        if ($task->user_id !== $request->user()->id) {
+            Notification::create([
+                'user_id' => $task->user_id,
+                'type' => 'task_updated',
+                'title' => __('messages.notif_task_updated_title'),
+                'message' => __('messages.notif_task_updated_message', ['task' => $task->title, 'user' => $request->user()->name]),
+                'link' => route('tasks.show', $task),
+            ]);
+        }
+
+        // Notify assigned user if updated by someone else
+        if ($task->assigned_to && $task->assigned_to !== $request->user()->id && $task->assigned_to !== $task->user_id) {
+            Notification::create([
+                'user_id' => $task->assigned_to,
+                'type' => 'task_updated',
+                'title' => __('messages.notif_task_updated_title'),
+                'message' => __('messages.notif_task_updated_message', ['task' => $task->title, 'user' => $request->user()->name]),
+                'link' => route('tasks.show', $task),
+            ]);
+        }
+
         return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
     }
 
@@ -118,6 +166,28 @@ class TaskController extends Controller
         }
 
         $task->update($validated);
+
+        // Notify task owner if status changed by someone else
+        if ($task->user_id !== auth()->id()) {
+            Notification::create([
+                'user_id' => $task->user_id,
+                'type' => 'task_updated',
+                'title' => __('messages.notif_task_updated_title'),
+                'message' => __('messages.notif_task_status_changed_message', ['task' => $task->title, 'user' => auth()->user()->name, 'status' => $validated['status']]),
+                'link' => route('tasks.show', $task),
+            ]);
+        }
+
+        // Notify assigned user if status changed by someone else
+        if ($task->assigned_to && $task->assigned_to !== auth()->id() && $task->assigned_to !== $task->user_id) {
+            Notification::create([
+                'user_id' => $task->assigned_to,
+                'type' => 'task_updated',
+                'title' => __('messages.notif_task_updated_title'),
+                'message' => __('messages.notif_task_status_changed_message', ['task' => $task->title, 'user' => auth()->user()->name, 'status' => $validated['status']]),
+                'link' => route('tasks.show', $task),
+            ]);
+        }
 
         return redirect()->back()->with('success', __('messages.task_updated'));
     }

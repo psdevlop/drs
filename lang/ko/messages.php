@@ -186,4 +186,22 @@ return [
     'english' => 'English',
     'korean' => '한국어',
     'invalid_credentials' => '제공된 자격 증명이 기록과 일치하지 않습니다.',
+    'remember_me' => '로그인 상태 유지',
+
+    // Notifications
+    'notifications' => '알림',
+    'no_notifications' => '알림이 없습니다.',
+    'mark_all_read' => '모두 읽음 처리',
+    'mark_read' => '읽음 처리',
+    'all_notifications_read' => '모든 알림이 읽음 처리되었습니다.',
+    'notif_task_assigned_title' => '새 작업 할당',
+    'notif_task_assigned_message' => ':user님이 ":task" 작업을 할당했습니다.',
+    'notif_task_created_title' => '새 작업 생성',
+    'notif_task_created_message' => ':user님이 새 작업 ":task"을(를) 생성했습니다.',
+    'notif_report_submitted_title' => '새 보고서 제출',
+    'notif_report_submitted_message' => ':user님이 :date 일일 보고서를 제출했습니다.',
+    'notif_report_for_task_message' => ':user님이 ":task" 작업에 대한 보고서를 제출했습니다.',
+    'notif_task_updated_title' => '작업 업데이트',
+    'notif_task_updated_message' => ':user님이 ":task" 작업을 업데이트했습니다.',
+    'notif_task_status_changed_message' => ':user님이 ":task"의 상태를 :status(으)로 변경했습니다.',
 ];

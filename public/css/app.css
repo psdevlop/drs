@@ -264,6 +264,25 @@ a.list-item-link:hover { background: #f9fafb; }
 /* ==========================================================================
    User Dropdown
    ========================================================================== */
+/* Notification Bell */
+.notification-bell { position: relative; }
+.notification-icon { color: #cbd5e1; position: relative; display: flex; align-items: center; transition: color 0.2s; }
+.notification-icon:hover { color: #fff; text-decoration: none; }
+.notification-badge { position: absolute; top: -6px; right: -8px; background: #ef4444; color: #fff; font-size: 0.65rem; font-weight: 700; min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 4px; line-height: 1; }
+
+/* Notification List */
+.notification-list { display: flex; flex-direction: column; }
+.notification-item { display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem; border-bottom: 1px solid #e5e7eb; transition: background 0.15s; }
+.notification-item:last-child { border-bottom: none; }
+.notification-unread { background: #eff6ff; }
+.notification-icon-type { flex-shrink: 0; }
+.notif-icon { font-size: 1.5rem; }
+.notification-content { flex: 1; min-width: 0; }
+.notification-title { font-weight: 600; font-size: 0.9rem; color: #1f2937; }
+.notification-message { font-size: 0.85rem; color: #6b7280; margin-top: 0.15rem; }
+.notification-time { font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem; }
+.notification-actions { flex-shrink: 0; display: flex; align-items: center; }
+
 .user-dropdown { position: relative; }
 .user-dropdown-toggle { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.3rem 0.5rem; border-radius: 6px; border: none; background: transparent; color: #cbd5e1; font-size: 0.875rem; transition: background 0.2s; }
 .user-dropdown-toggle:hover { background: rgba(255,255,255,0.1); }
@@ -317,6 +336,14 @@ a.list-item-link:hover { background: #f9fafb; }
 
     .lang-switcher { padding: 0.75rem 0.5rem; border-bottom: 1px solid #334155; justify-content: flex-start; gap: 0.5rem; }
     .lang-switcher a { font-size: 0.9rem; padding: 0.3rem 0.6rem; }
+
+    .notification-bell { padding: 0.75rem 0.5rem; border-bottom: 1px solid #334155; }
+    .notification-icon { gap: 0.5rem; }
+    .notification-icon::after { content: attr(title); font-size: 0.95rem; color: #cbd5e1; }
+    .notification-badge { position: static; margin-left: 0.25rem; }
+
+    .notification-item { flex-direction: column; gap: 0.5rem; }
+    .notification-actions { align-self: flex-end; }
 
     /* Flatten user dropdown on mobile */
     .user-dropdown { position: static; }

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\DailyReport;
+use App\Models\Notification;
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class DailyReportController extends Controller
@@ -53,7 +55,33 @@ class DailyReportController extends Controller
             'plan_for_tomorrow' => ['nullable', 'string'],
         ]);
 
-        $request->user()->dailyReports()->create($validated);
+        $report = $request->user()->dailyReports()->create($validated);
+
+        // Notify admins about new report
+        $admins = User::where('role', '!=', 'user')->where('id', '!=', $request->user()->id)->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id' => $admin->id,
+                'type' => 'report_submitted',
+                'title' => __('messages.notif_report_submitted_title'),
+                'message' => __('messages.notif_report_submitted_message', ['user' => $request->user()->name, 'date' => $report->report_date->format('M d, Y')]),
+                'link' => route('reports.show', $report),
+            ]);
+        }
+
+        // Notify task owner if report is linked to a task they own
+        if ($report->task_id) {
+            $task = Task::find($report->task_id);
+            if ($task && $task->user_id !== $request->user()->id && !User::find($task->user_id)?->isAdmin()) {
+                Notification::create([
+                    'user_id' => $task->user_id,
+                    'type' => 'report_submitted',
+                    'title' => __('messages.notif_report_submitted_title'),
+                    'message' => __('messages.notif_report_for_task_message', ['user' => $request->user()->name, 'task' => $task->title]),
+                    'link' => route('reports.show', $report),
+                ]);
+            }
+        }
 
         return redirect()->route('reports.index')->with('success', 'Daily report submitted successfully.');
     }

@@ -41,6 +41,16 @@ class User extends Authenticatable
         return $this->hasMany(DailyReport::class);
     }
 
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function unreadNotificationsCount(): int
+    {
+        return $this->notifications()->whereNull('read_at')->count();
+    }
+
     public function isSuperAdmin(): bool
     {
         return $this->role === 'super_admin';

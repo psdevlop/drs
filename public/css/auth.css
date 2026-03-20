@@ -96,6 +96,10 @@ body {
     border: 1px solid rgba(239, 68, 68, 0.3);
     color: #fca5a5;
 }
+.remember-group { margin-bottom: 0.5rem; }
+.checkbox-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem; color: #94a3b8; }
+.checkbox-label input[type="checkbox"] { width: 16px; height: 16px; accent-color: #6366f1; cursor: pointer; }
+.checkbox-label span { user-select: none; }
 .lang-switcher { position: fixed; top: 1rem; right: 1.5rem; display: flex; gap: 0.25rem; }
 .lang-switcher a { color: #64748b; font-size: 0.85rem; padding: 0.2rem 0.5rem; border-radius: 4px; text-decoration: none; }
 .lang-switcher a:hover { color: #cbd5e1; }

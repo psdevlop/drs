@@ -186,4 +186,22 @@ return [
     'english' => 'English',
     'korean' => '한국어',
     'invalid_credentials' => 'The provided credentials do not match our records.',
+    'remember_me' => 'Remember Me',
+
+    // Notifications
+    'notifications' => 'Notifications',
+    'no_notifications' => 'No notifications.',
+    'mark_all_read' => 'Mark All as Read',
+    'mark_read' => 'Mark as Read',
+    'all_notifications_read' => 'All notifications marked as read.',
+    'notif_task_assigned_title' => 'New Task Assigned',
+    'notif_task_assigned_message' => 'You have been assigned the task ":task" by :user.',
+    'notif_task_created_title' => 'New Task Created',
+    'notif_task_created_message' => ':user created a new task ":task".',
+    'notif_report_submitted_title' => 'New Report Submitted',
+    'notif_report_submitted_message' => ':user submitted a daily report for :date.',
+    'notif_report_for_task_message' => ':user submitted a report for task ":task".',
+    'notif_task_updated_title' => 'Task Updated',
+    'notif_task_updated_message' => ':user updated the task ":task".',
+    'notif_task_status_changed_message' => ':user changed the status of ":task" to :status.',
 ];

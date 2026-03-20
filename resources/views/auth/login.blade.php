@@ -39,9 +39,40 @@
                     <label for="password">{{ __('messages.password') }}</label>
                     <input type="password" id="password" name="password" class="form-control" placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;" required>
                 </div>
+                <div class="form-group remember-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+                        <span>{{ __('messages.remember_me') }}</span>
+                    </label>
+                </div>
                 <button type="submit" class="btn-submit">{{ __('messages.sign_in') }}</button>
             </form>
         </div>
     </div>
+    <script>
+        (function() {
+            var emailInput = document.getElementById('email');
+            var passwordInput = document.getElementById('password');
+            var rememberCheck = document.getElementById('remember');
+            var savedEmail = localStorage.getItem('remembered_email');
+            var savedPassword = localStorage.getItem('remembered_password');
+            if (savedEmail && !emailInput.value) {
+                emailInput.value = savedEmail;
+                rememberCheck.checked = true;
+            }
+            if (savedPassword && !passwordInput.value) {
+                passwordInput.value = atob(savedPassword);
+            }
+            document.querySelector('form').addEventListener('submit', function() {
+                if (rememberCheck.checked) {
+                    localStorage.setItem('remembered_email', emailInput.value);
+                    localStorage.setItem('remembered_password', btoa(passwordInput.value));
+                } else {
+                    localStorage.removeItem('remembered_email');
+                    localStorage.removeItem('remembered_password');
+                }
+            });
+        })();
+    </script>
 </body>
 </html>
