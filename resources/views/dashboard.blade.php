@@ -41,6 +41,33 @@
     <div class="alert alert-info">{{ __('messages.today_report_not_submitted') }} <a href="{{ route('reports.create') }}">{{ __('messages.submit_now') }}</a></div>
 @endif
 
+@if($latestAnnouncements->count())
+<div class="card">
+    <div class="card-title">{{ __('messages.announcement_board') }}</div>
+    @foreach($latestAnnouncements as $announcement)
+        <a href="{{ route('announcements.show', $announcement) }}" class="list-item list-item-link">
+            <div class="list-item-row">
+                <div>
+                    <div class="text-bold">
+                        @if($announcement->is_pinned)<span class="announcement-pin-icon-sm">&#128204;</span>@endif
+                        @if($announcement->priority !== 'normal')<span class="badge badge-announcement-{{ $announcement->priority }}">{{ __('messages.priority_' . $announcement->priority) }}</span>@endif
+                        {{ $announcement->title }}
+                    </div>
+                    <div class="text-muted text-sm">{{ Str::limit($announcement->content, 80) }}</div>
+                </div>
+                <div class="announcement-meta-sm">
+                    <span>{{ $announcement->user->name }}</span>
+                    <span>{{ $announcement->created_at->format('M d') }}</span>
+                </div>
+            </div>
+        </a>
+    @endforeach
+    <div class="text-center mt-lg">
+        <a href="{{ route('announcements.index') }}" class="btn btn-sm btn-outline">{{ __('messages.view_all_announcements') }}</a>
+    </div>
+</div>
+@endif
+
 <div class="two-col-grid">
     <div class="card">
         <div class="card-title">{{ __('messages.recent_tasks') }}</div>

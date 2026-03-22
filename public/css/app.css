@@ -312,6 +312,38 @@ a.list-item-link:hover { background: #f9fafb; }
 .lang-switcher-divider { color: #475569; }
 
 /* ==========================================================================
+   Announcements
+   ========================================================================== */
+.announcement-card { border-left: 4px solid #e5e7eb; }
+.announcement-pinned { border-left-color: #818cf8; background: #fafbff; }
+.announcement-important { border-left-color: #f59e0b; }
+.announcement-urgent { border-left-color: #ef4444; }
+.announcement-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+.announcement-title { font-size: 1.1rem; font-weight: 600; color: #1f2937; text-decoration: none; }
+.announcement-title:hover { color: #4f46e5; }
+.announcement-meta { display: flex; gap: 0.75rem; font-size: 0.8rem; color: #6b7280; align-items: center; }
+.announcement-date { white-space: nowrap; }
+.announcement-excerpt { color: #4b5563; line-height: 1.6; margin-bottom: 0.75rem; }
+.announcement-footer { display: flex; justify-content: space-between; align-items: center; }
+.announcement-pin-icon { font-size: 0.9rem; margin-right: 0.25rem; }
+.announcement-pin-icon-sm { font-size: 0.75rem; margin-right: 0.15rem; }
+.announcement-meta-sm { display: flex; flex-direction: column; align-items: flex-end; gap: 0.15rem; font-size: 0.75rem; color: #6b7280; white-space: nowrap; }
+
+.badge-announcement-important { background: #fef3c7; color: #92400e; }
+.badge-announcement-urgent { background: #fef2f2; color: #991b1b; }
+
+.announcement-show-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+.announcement-show-title { font-size: 1.35rem; font-weight: 700; color: #1f2937; margin: 0; }
+.announcement-show-meta { display: flex; gap: 1rem; font-size: 0.85rem; color: #6b7280; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.announcement-show-content { color: #374151; line-height: 1.8; white-space: pre-wrap; margin-bottom: 1.5rem; }
+.announcement-show-actions { display: flex; gap: 0.5rem; border-top: 1px solid #e5e7eb; padding-top: 1rem; }
+
+.checkbox-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding-top: 1.75rem; }
+.checkbox-label input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+
+.announcements-list { display: flex; flex-direction: column; gap: 1rem; }
+
+/* ==========================================================================
    Hamburger
    ========================================================================== */
 .navbar-toggler { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; color: #cbd5e1; font-size: 1.5rem; line-height: 1; }
