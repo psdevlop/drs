@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', __('messages.edit_task'))
+@section('ckeditor', true)
 @section('content')
 <div class="page-header">
     <h1>{{ __('messages.edit_task') }}</h1>
@@ -16,7 +17,7 @@
         </div>
         <div class="form-group">
             <label for="description">{{ __('messages.description') }}</label>
-            <textarea id="description" name="description" class="form-control">{{ old('description', $task->description) }}</textarea>
+            <textarea id="description" name="description" class="form-control ckeditor-field">{{ old('description', $task->description) }}</textarea>
             @error('description') <div class="error-text">{{ $message }}</div> @enderror
         </div>
         <div class="form-group">

@@ -19,7 +19,7 @@
         @if($task->description)
         <div class="detail-row">
             <div class="detail-label">{{ __('messages.description') }}</div>
-            <div class="detail-value">{{ $task->description }}</div>
+            <div class="detail-value ck-content">{!! $task->description !!}</div>
         </div>
         @endif
 
