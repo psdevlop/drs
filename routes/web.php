@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\TaskController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -52,6 +53,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+
+    // Editor image upload
+    Route::post('/editor/upload', function (Request $request) {
+        $request->validate(['upload' => ['required', 'image', 'max:5120']]);
+        $path = $request->file('upload')->store('editor-images', 'public');
+        return response()->json(['url' => asset('storage/' . $path)]);
+    })->name('editor.upload');
 
     // Announcements
     Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');

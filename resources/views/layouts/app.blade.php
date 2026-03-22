@@ -92,5 +92,44 @@
         });
     </script>
     @endauth
+    @hasSection('ckeditor')
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+    <script>
+        function SimpleUploadAdapterPlugin(editor) {
+            editor.plugins.get('FileRepository').createUploadAdapter = function(loader) {
+                return {
+                    upload: function() {
+                        return loader.file.then(function(file) {
+                            return new Promise(function(resolve, reject) {
+                                var data = new FormData();
+                                data.append('upload', file);
+                                var xhr = new XMLHttpRequest();
+                                xhr.open('POST', '{{ route("editor.upload") }}', true);
+                                xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').content);
+                                xhr.onload = function() {
+                                    if (xhr.status >= 200 && xhr.status < 300) {
+                                        var res = JSON.parse(xhr.responseText);
+                                        resolve({ default: res.url });
+                                    } else { reject('Upload failed'); }
+                                };
+                                xhr.onerror = function() { reject('Upload failed'); };
+                                xhr.send(data);
+                            });
+                        });
+                    }
+                };
+            };
+        }
+        document.querySelectorAll('.ckeditor-field').forEach(function(el) {
+            ClassicEditor.create(el, {
+                extraPlugins: [SimpleUploadAdapterPlugin],
+                toolbar: ['heading', '|', 'bold', 'italic', 'underline', 'strikethrough', '|', 'bulletedList', 'numberedList', '|', 'link', 'imageUpload', 'blockQuote', 'insertTable', '|', 'undo', 'redo'],
+                image: {
+                    toolbar: ['imageTextAlternative', '|', 'imageStyle:inline', 'imageStyle:block', 'imageStyle:side']
+                }
+            }).catch(function(err) { console.error(err); });
+        });
+    </script>
+    @endif
 </body>
 </html>
