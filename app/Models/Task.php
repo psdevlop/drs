@@ -32,6 +32,11 @@ class Task extends Model
         ];
     }
 
+    public function setDescriptionAttribute($value)
+    {
+        $this->attributes['description'] = $value ? strip_tags($value, '<p><br><strong><em><u><s><ul><ol><li><a><img><blockquote><table><thead><tbody><tr><td><th><h2><h3><h4><figure><figcaption>') : $value;
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

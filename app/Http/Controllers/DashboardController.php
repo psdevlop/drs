@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Announcement;
 use App\Models\DailyReport;
 use App\Models\Task;
 use Illuminate\Http\Request;
@@ -38,6 +39,12 @@ class DashboardController extends Controller
         }
         $todayReport = $user->dailyReports()->where('report_date', today())->first();
 
-        return view('dashboard', compact('taskStats', 'recentTasks', 'recentReports', 'todayReport'));
+        $latestAnnouncements = Announcement::with('user')
+            ->orderByDesc('is_pinned')
+            ->latest()
+            ->take(3)
+            ->get();
+
+        return view('dashboard', compact('taskStats', 'recentTasks', 'recentReports', 'todayReport', 'latestAnnouncements'));
     }
 }
