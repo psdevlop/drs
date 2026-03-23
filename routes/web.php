@@ -8,6 +8,7 @@ use App\Http\Controllers\DailyReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OnCallController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -81,6 +82,9 @@ Route::middleware('auth')->group(function () {
 
     // Daily Reports
     Route::resource('reports', DailyReportController::class);
+
+    // On Call
+    Route::resource('oncall', OnCallController::class)->except(['show']);
 
     // Admin routes
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {

@@ -15,6 +15,7 @@
         <span class="legend-item"><span class="legend-dot legend-in-progress"></span> {{ __('messages.in_progress') }}</span>
         <span class="legend-item"><span class="legend-dot legend-completed"></span> {{ __('messages.completed') }}</span>
         <span class="legend-item"><span class="legend-dot legend-report"></span> {{ __('messages.reports') }}</span>
+        <span class="legend-item"><span class="legend-dot legend-oncall"></span> {{ __('messages.on_call') }}</span>
     </div>
     <div id="scheduleCalendar"></div>
 </div>
@@ -34,6 +35,11 @@
         <div><strong>{{ __('messages.summary') }}:</strong> <span class="tooltip-summary"></span></div>
         <div><strong>{{ __('messages.related_task') }}:</strong> <span class="tooltip-task"></span></div>
         <div><strong>{{ __('messages.challenges') }}:</strong> <span class="tooltip-challenges"></span></div>
+    </div>
+    <div class="tooltip-oncall-meta tooltip-meta" style="display:none;">
+        <div><strong>{{ __('messages.date') }}:</strong> <span class="tooltip-oncall-date"></span></div>
+        <div><strong>{{ __('messages.oncall_duty_users') }}:</strong> <span class="tooltip-oncall-users"></span></div>
+        <div><strong>{{ __('messages.oncall_notes') }}:</strong> <span class="tooltip-oncall-notes"></span></div>
     </div>
 </div>
 
@@ -90,11 +96,20 @@ document.addEventListener('DOMContentLoaded', function() {
             var props = info.event.extendedProps;
             var taskMeta = tooltip.querySelector('.tooltip-task-meta');
             var reportMeta = tooltip.querySelector('.tooltip-report-meta');
+            var oncallMeta = tooltip.querySelector('.tooltip-oncall-meta');
 
             tooltip.querySelector('.tooltip-title').textContent = info.event.title;
 
-            if (props.type === 'report') {
-                taskMeta.style.display = 'none';
+            taskMeta.style.display = 'none';
+            reportMeta.style.display = 'none';
+            oncallMeta.style.display = 'none';
+
+            if (props.type === 'oncall') {
+                oncallMeta.style.display = 'block';
+                tooltip.querySelector('.tooltip-oncall-date').textContent = props.date;
+                tooltip.querySelector('.tooltip-oncall-users').textContent = props.users;
+                tooltip.querySelector('.tooltip-oncall-notes').textContent = props.notes;
+            } else if (props.type === 'report') {
                 reportMeta.style.display = 'block';
                 tooltip.querySelector('.tooltip-report-date').textContent = props.report_date;
                 tooltip.querySelector('.tooltip-summary').textContent = props.summary;
@@ -102,7 +117,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 tooltip.querySelector('.tooltip-challenges').textContent = props.challenges;
             } else {
                 taskMeta.style.display = 'block';
-                reportMeta.style.display = 'none';
                 tooltip.querySelector('.tooltip-status').textContent = props.status.replace('_', ' ');
                 tooltip.querySelector('.tooltip-priority').textContent = props.priority;
                 tooltip.querySelector('.tooltip-progress').textContent = props.progress + '%';
