@@ -14,13 +14,18 @@ class DashboardController extends Controller
         $user = $request->user();
         $userId = $user->id;
 
-        $userTasks = Task::where('user_id', $userId)->orWhere('assigned_to', $userId);
+        $userTasksQuery = function () use ($userId) {
+            return Task::where(function ($q) use ($userId) {
+                $q->where('user_id', $userId)
+                  ->orWhere('assigned_to', $userId);
+            });
+        };
 
         $taskStats = [
-            'total' => (clone $userTasks)->count(),
-            'pending' => (clone $userTasks)->where('status', 'pending')->count(),
-            'in_progress' => (clone $userTasks)->where('status', 'in_progress')->count(),
-            'completed' => (clone $userTasks)->where('status', 'completed')->count(),
+            'total' => $userTasksQuery()->count(),
+            'pending' => $userTasksQuery()->where('status', 'pending')->count(),
+            'in_progress' => $userTasksQuery()->where('status', 'in_progress')->count(),
+            'completed' => $userTasksQuery()->where('status', 'completed')->count(),
         ];
 
         $recentTasks = Task::with(['assignee', 'user'])
