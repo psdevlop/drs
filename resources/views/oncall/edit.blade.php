@@ -6,6 +6,10 @@
     <a href="{{ route('oncall.index') }}" class="btn btn-outline">{{ __('messages.oncall_back') }}</a>
 </div>
 
+@if(session('error'))
+    <div class="alert alert-danger">{{ session('error') }}</div>
+@endif
+
 <div class="card">
     <form method="POST" action="{{ route('oncall.update', $oncall) }}">
         @csrf @method('PUT')

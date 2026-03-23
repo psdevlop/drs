@@ -248,4 +248,7 @@ return [
     'oncall_deleted' => '당직 일정이 성공적으로 삭제되었습니다.',
     'oncall_delete_confirm' => '이 당직 일정을 삭제하시겠습니까?',
     'no_oncall_found' => '당직 일정을 찾을 수 없습니다.',
+    'oncall_duplicate_users' => ':date에 다음 사용자가 이미 당직으로 등록되어 있습니다: :users',
+    'oncall_past_no_edit' => '지난 날짜의 당직 일정은 수정할 수 없습니다.',
+    'oncall_completed' => '완료됨',
 ];

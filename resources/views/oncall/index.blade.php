@@ -11,6 +11,9 @@
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
 @endif
+@if(session('error'))
+    <div class="alert alert-danger">{{ session('error') }}</div>
+@endif
 
 <div class="card">
     @if($onCalls->count())
@@ -40,7 +43,11 @@
                             <td>{{ $onCall->creator->name }}</td>
                             <td>
                                 <div class="actions">
-                                    <a href="{{ route('oncall.edit', $onCall) }}" class="btn btn-sm btn-outline">{{ __('messages.edit') }}</a>
+                                    @if($onCall->date->gte($today))
+                                        <a href="{{ route('oncall.edit', $onCall) }}" class="btn btn-sm btn-outline">{{ __('messages.edit') }}</a>
+                                    @else
+                                        <span class="badge badge-completed">{{ __('messages.oncall_completed') }}</span>
+                                    @endif
                                     <form action="{{ route('oncall.destroy', $onCall) }}" method="POST" onsubmit="return confirm('{{ __('messages.oncall_delete_confirm') }}')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">{{ __('messages.delete') }}</button>

@@ -248,4 +248,7 @@ return [
     'oncall_deleted' => 'On Call schedule deleted successfully.',
     'oncall_delete_confirm' => 'Delete this on-call schedule?',
     'no_oncall_found' => 'No on-call schedules found.',
+    'oncall_duplicate_users' => 'The following users are already on call for :date: :users',
+    'oncall_past_no_edit' => 'Cannot edit on-call schedules for past dates.',
+    'oncall_completed' => 'Completed',
 ];
