@@ -112,11 +112,24 @@ select.form-control { appearance: auto; -webkit-appearance: menulist; -moz-appea
 /* ==========================================================================
    Detail View
    ========================================================================== */
-.detail-grid { display: flex; flex-direction: column; gap: 1rem; }
-.detail-row { display: flex; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #f3f4f6; }
-.detail-row:last-child { border-bottom: none; }
+.detail-grid { display: flex; flex-direction: column; gap: 0; }
+.detail-row, .detail-item { display: flex; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #f3f4f6; }
+.detail-row:last-child, .detail-item:last-child { border-bottom: none; }
 .detail-label { min-width: 180px; font-weight: 600; color: #374151; }
 .detail-value { flex: 1; color: #4b5563; }
+.detail-section { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; }
+.detail-content { margin-top: 0.5rem; color: #4b5563; white-space: pre-wrap; }
+
+/* Service Badges */
+.badge-service-domain { background: #dbeafe; color: #1e40af; }
+.badge-service-hosting { background: #fef3c7; color: #92400e; }
+.badge-service-cdn { background: #e0e7ff; color: #3730a3; }
+.badge-service-website { background: #d1fae5; color: #065f46; }
+.badge-service-status-active { background: #d1fae5; color: #065f46; }
+.badge-service-status-expired { background: #fef2f2; color: #991b1b; }
+.badge-service-status-pending { background: #fef3c7; color: #92400e; }
+.badge-service-status-suspended { background: #fee2e2; color: #b91c1c; }
+.text-warning { color: #d97706; }
 
 /* Calendar */
 .calendar-legend { display: flex; gap: 1.25rem; margin-bottom: 1rem; flex-wrap: wrap; }

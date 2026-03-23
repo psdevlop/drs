@@ -22,8 +22,9 @@
                 <li><a href="{{ route('schedule') }}" class="{{ request()->routeIs('schedule*') ? 'active' : '' }}">{{ __('messages.schedule_management') }}</a></li>
                 <li><a href="{{ route('announcements.index') }}" class="{{ request()->routeIs('announcements.*') ? 'active' : '' }}">{{ __('messages.announcement_board') }}</a></li>
                 <li><a href="{{ route('oncall.index') }}" class="{{ request()->routeIs('oncall.*') ? 'active' : '' }}">{{ __('messages.on_call') }}</a></li>
+                <li><a href="{{ route('services.index') }}" class="{{ request()->routeIs('services.*') || request()->routeIs('admin.services.*') ? 'active' : '' }}">{{ __('messages.services') }}</a></li>
                 @if(auth()->user()->isAdmin())
-                    <li><a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.*') ? 'active' : '' }}">{{ __('messages.admin') }}</a></li>
+                    <li><a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.*') && !request()->routeIs('admin.services.*') ? 'active' : '' }}">{{ __('messages.admin') }}</a></li>
                 @endif
             </ul>
             <div class="navbar-right">
