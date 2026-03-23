@@ -231,4 +231,21 @@ return [
     'delete_announcement_confirm' => '이 공지사항을 삭제하시겠습니까?',
     'search_announcements' => '공지사항 검색...',
     'search' => '검색',
+
+    // On Call
+    'on_call' => '당직',
+    'new_on_call' => '+ 새 당직',
+    'oncall_edit' => '당직 수정',
+    'oncall_update' => '당직 업데이트',
+    'oncall_save' => '당직 저장',
+    'oncall_back' => '당직 목록으로',
+    'oncall_select_users' => '당직 근무자 선택',
+    'oncall_duty_users' => '당직 근무자',
+    'oncall_notes' => '메모',
+    'oncall_notes_placeholder' => '이 당직에 대한 메모를 추가하세요...',
+    'oncall_created' => '당직 일정이 성공적으로 생성되었습니다.',
+    'oncall_updated' => '당직 일정이 성공적으로 업데이트되었습니다.',
+    'oncall_deleted' => '당직 일정이 성공적으로 삭제되었습니다.',
+    'oncall_delete_confirm' => '이 당직 일정을 삭제하시겠습니까?',
+    'no_oncall_found' => '당직 일정을 찾을 수 없습니다.',
 ];

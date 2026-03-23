@@ -231,4 +231,21 @@ return [
     'delete_announcement_confirm' => 'Are you sure you want to delete this announcement?',
     'search_announcements' => 'Search announcements...',
     'search' => 'Search',
+
+    // On Call
+    'on_call' => 'On Call',
+    'new_on_call' => '+ New On Call',
+    'oncall_edit' => 'Edit On Call',
+    'oncall_update' => 'Update On Call',
+    'oncall_save' => 'Save On Call',
+    'oncall_back' => 'Back to On Call',
+    'oncall_select_users' => 'Select On Duty Users',
+    'oncall_duty_users' => 'On Duty Users',
+    'oncall_notes' => 'Notes',
+    'oncall_notes_placeholder' => 'Add any notes about this on-call shift...',
+    'oncall_created' => 'On Call schedule created successfully.',
+    'oncall_updated' => 'On Call schedule updated successfully.',
+    'oncall_deleted' => 'On Call schedule deleted successfully.',
+    'oncall_delete_confirm' => 'Delete this on-call schedule?',
+    'no_oncall_found' => 'No on-call schedules found.',
 ];

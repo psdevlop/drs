@@ -60,7 +60,7 @@ class AdminController extends Controller
 
         $validated['password'] = Hash::make($validated['password']);
 
-        User::create($validated);
+        $user = User::create($validated);
 
         return redirect()->route('admin.users.index')->with('success', __('messages.user_created'));
     }

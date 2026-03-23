@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DailyReport;
+use App\Models\OnCall;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -105,6 +106,30 @@ class CalendarController extends Controller
                     'summary' => $report->summary,
                     'task' => $report->task?->title ?? '-',
                     'challenges' => $report->challenges ?? '-',
+                ],
+            ];
+        }
+
+        // On Call
+        $onCallQuery = OnCall::with('users');
+        if ($request->filled('start') && $request->filled('end')) {
+            $onCallQuery->whereBetween('date', [$request->start, $request->end]);
+        }
+
+        foreach ($onCallQuery->get() as $onCall) {
+            $userNames = $onCall->users->pluck('name')->join(', ');
+            $events[] = [
+                'id' => 'oncall-' . $onCall->id,
+                'title' => '📞 ' . __('messages.on_call') . ': ' . $userNames,
+                'start' => $onCall->date->format('Y-m-d'),
+                'url' => route('oncall.index'),
+                'backgroundColor' => '#ef4444',
+                'borderColor' => '#dc2626',
+                'extendedProps' => [
+                    'type' => 'oncall',
+                    'users' => $userNames,
+                    'notes' => $onCall->notes ?? '-',
+                    'date' => $onCall->date->format('M d, Y'),
                 ],
             ];
         }

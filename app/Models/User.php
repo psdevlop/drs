@@ -24,6 +24,9 @@ class User extends Authenticatable
         'avatar',
         'password',
         'role',
+        'last_seen_at',
+        'typing_to',
+        'typing_at',
     ];
 
     public function tasks()
@@ -86,6 +89,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'last_seen_at' => 'datetime',
+            'typing_at' => 'datetime',
         ];
     }
 }
