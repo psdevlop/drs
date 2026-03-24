@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnCallController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -86,6 +87,10 @@ Route::middleware('auth')->group(function () {
     // On Call
     Route::resource('oncall', OnCallController::class)->except(['show']);
 
+    // Services (view only for all users)
+    Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
+    Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
+
     // Admin routes
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
@@ -99,5 +104,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/users/{user}/edit', [AdminController::class, 'editUser'])->name('users.edit');
         Route::put('/users/{user}', [AdminController::class, 'updateUser'])->name('users.update');
         Route::delete('/users/{user}', [AdminController::class, 'destroyUser'])->name('users.destroy');
+
+        // Services Management (Admin only)
+        Route::resource('services', ServiceController::class);
     });
 });
