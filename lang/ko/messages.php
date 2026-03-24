@@ -206,6 +206,8 @@ return [
     'notif_task_status_changed_message' => ':user님이 ":task"의 상태를 :status(으)로 변경했습니다.',
     'notif_announcement_title' => '새 공지사항',
     'notif_announcement_message' => ':user님이 새 공지사항을 게시했습니다: ":title".',
+    'notif_announcement_updated_title' => '공지사항 수정',
+    'notif_announcement_updated_message' => ':user님이 공지사항을 수정했습니다: ":title".',
 
     // Announcements
     'announcement_board' => '공지 게시판',
