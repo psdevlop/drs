@@ -206,6 +206,8 @@ return [
     'notif_task_status_changed_message' => ':user changed the status of ":task" to :status.',
     'notif_announcement_title' => 'New Announcement',
     'notif_announcement_message' => ':user posted a new announcement: ":title".',
+    'notif_announcement_updated_title' => 'Announcement Updated',
+    'notif_announcement_updated_message' => ':user updated the announcement: ":title".',
 
     // Announcements
     'announcement_board' => 'Notice Board',

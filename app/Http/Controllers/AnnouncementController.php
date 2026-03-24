@@ -89,6 +89,18 @@ class AnnouncementController extends Controller
 
         $announcement->update($validated);
 
+        // Notify all users except the updater
+        $users = User::where('id', '!=', $request->user()->id)->get();
+        foreach ($users as $user) {
+            Notification::create([
+                'user_id' => $user->id,
+                'type' => 'announcement_updated',
+                'title' => __('messages.notif_announcement_updated_title'),
+                'message' => __('messages.notif_announcement_updated_message', ['title' => $announcement->title, 'user' => $request->user()->name]),
+                'link' => route('announcements.show', $announcement),
+            ]);
+        }
+
         return redirect()->route('announcements.show', $announcement)->with('success', __('messages.announcement_updated'));
     }
 
