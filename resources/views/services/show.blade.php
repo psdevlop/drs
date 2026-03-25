@@ -78,7 +78,14 @@
             @if($service->admin_password)
             <div class="detail-item">
                 <div class="detail-label">{{ __('messages.admin_password') }}</div>
-                <div class="detail-value"><code>{{ $service->admin_password }}</code></div>
+                <div class="detail-value password-field">
+                    <code class="password-mask">••••••••</code>
+                    <code class="password-value" style="display:none;">{{ $service->admin_password }}</code>
+                    <button type="button" class="btn-eye" onclick="togglePassword(this)">
+                        <svg class="eye-icon eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        <svg class="eye-icon eye-on" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                </div>
             </div>
             @endif
             @if($service->test_id)
@@ -90,7 +97,14 @@
             @if($service->test_password)
             <div class="detail-item">
                 <div class="detail-label">{{ __('messages.test_password') }}</div>
-                <div class="detail-value"><code>{{ $service->test_password }}</code></div>
+                <div class="detail-value password-field">
+                    <code class="password-mask">••••••••</code>
+                    <code class="password-value" style="display:none;">{{ $service->test_password }}</code>
+                    <button type="button" class="btn-eye" onclick="togglePassword(this)">
+                        <svg class="eye-icon eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        <svg class="eye-icon eye-on" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                </div>
             </div>
             @endif
         @endif
@@ -110,4 +124,23 @@
     </div>
     @endif
 </div>
+<script>
+function togglePassword(btn) {
+    const mask = btn.parentElement.querySelector('.password-mask');
+    const value = btn.parentElement.querySelector('.password-value');
+    const eyeOff = btn.querySelector('.eye-off');
+    const eyeOn = btn.querySelector('.eye-on');
+    if (mask.style.display === 'none') {
+        mask.style.display = '';
+        value.style.display = 'none';
+        eyeOff.style.display = '';
+        eyeOn.style.display = 'none';
+    } else {
+        mask.style.display = 'none';
+        value.style.display = '';
+        eyeOff.style.display = 'none';
+        eyeOn.style.display = '';
+    }
+}
+</script>
 @endsection
