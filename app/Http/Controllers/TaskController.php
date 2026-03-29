@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Notification;
 use App\Models\Task;
 use App\Models\TaskAttachment;
+use App\Models\TaskComment;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -98,7 +99,7 @@ class TaskController extends Controller
     public function show(Task $task)
     {
         $this->authorizeTask($task);
-        $task->load(['user', 'assignees', 'requester', 'attachments']);
+        $task->load(['user', 'assignees', 'requester', 'attachments', 'comments.user']);
         return view('tasks.show', compact('task'));
     }
 
@@ -232,6 +233,72 @@ class TaskController extends Controller
         $attachment->delete();
 
         return redirect()->back()->with('success', __('messages.attachment_deleted'));
+    }
+
+    public function storeComment(Request $request, Task $task)
+    {
+        $this->authorizeTask($task);
+
+        $validated = $request->validate([
+            'body' => ['required', 'string', 'max:5000'],
+            'attachment' => ['nullable', 'file', 'max:5120'],
+        ]);
+
+        $commentData = [
+            'user_id' => auth()->id(),
+            'body' => $validated['body'],
+        ];
+
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $commentData['attachment_path'] = $file->store('comment-attachments', 'public');
+            $commentData['attachment_name'] = $file->getClientOriginalName();
+        }
+
+        $comment = $task->comments()->create($commentData);
+
+        // Notify task owner
+        if ($task->user_id !== auth()->id()) {
+            Notification::create([
+                'user_id' => $task->user_id,
+                'type' => 'task_comment',
+                'title' => __('messages.notif_task_comment_title'),
+                'message' => __('messages.notif_task_comment_message', ['task' => $task->title, 'user' => auth()->user()->name]),
+                'link' => route('tasks.show', $task),
+            ]);
+        }
+
+        // Notify assigned users
+        foreach ($task->assignees as $assignee) {
+            if ($assignee->id !== auth()->id() && $assignee->id !== $task->user_id) {
+                Notification::create([
+                    'user_id' => $assignee->id,
+                    'type' => 'task_comment',
+                    'title' => __('messages.notif_task_comment_title'),
+                    'message' => __('messages.notif_task_comment_message', ['task' => $task->title, 'user' => auth()->user()->name]),
+                    'link' => route('tasks.show', $task),
+                ]);
+            }
+        }
+
+        return redirect()->route('tasks.show', $task)->with('success', __('messages.comment_added'));
+    }
+
+    public function destroyComment(Task $task, TaskComment $comment)
+    {
+        $this->authorizeTask($task);
+
+        if ($comment->user_id !== auth()->id() && !auth()->user()->isAdmin()) {
+            abort(403);
+        }
+
+        if ($comment->attachment_path) {
+            Storage::disk('public')->delete($comment->attachment_path);
+        }
+
+        $comment->delete();
+
+        return redirect()->route('tasks.show', $task)->with('success', __('messages.comment_deleted'));
     }
 
     private function handleAttachments(Request $request, Task $task): void

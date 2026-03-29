@@ -143,4 +143,70 @@
     @endif
 </div>
 @endif
+
+<div class="card">
+    <div class="card-title">{{ __('messages.comments') }} ({{ $task->comments->count() }})</div>
+
+    <form method="POST" action="{{ route('tasks.comments.store', $task) }}" class="comment-form" enctype="multipart/form-data">
+        @csrf
+        <div class="form-group">
+            <textarea name="body" class="form-control" rows="3" placeholder="{{ __('messages.write_comment') }}" required>{{ old('body') }}</textarea>
+            @error('body') <div class="error-text">{{ $message }}</div> @enderror
+        </div>
+        <div class="comment-form-actions">
+            <label class="btn btn-sm btn-outline comment-attach-btn">
+                <span class="attachment-icon">&#128206;</span> {{ __('messages.attach_file') }}
+                <input type="file" name="attachment" class="hidden-input" onchange="document.getElementById('attachment-name').textContent = this.files[0]?.name || ''">
+            </label>
+            <span id="attachment-name" class="comment-attach-name"></span>
+            <button type="submit" class="btn btn-primary btn-sm">{{ __('messages.post_comment') }}</button>
+        </div>
+        <div class="form-hint">{{ __('messages.max_file_size', ['size' => '5MB']) }}</div>
+        @error('attachment') <div class="error-text">{{ $message }}</div> @enderror
+    </form>
+
+    @if($task->comments->count())
+        <div class="comments-list">
+            @foreach($task->comments as $comment)
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <div class="comment-author">
+                            @if($comment->user->avatar)
+                                <img src="{{ asset('storage/' . $comment->user->avatar) }}" alt="" class="comment-avatar">
+                            @else
+                                <div class="comment-avatar-placeholder">{{ strtoupper(substr($comment->user->name, 0, 1)) }}</div>
+                            @endif
+                            <div>
+                                <span class="comment-name">{{ $comment->user->name }}</span>
+                                <span class="comment-time">{{ $comment->created_at->diffForHumans() }}</span>
+                            </div>
+                        </div>
+                        @if($comment->user_id === auth()->id() || auth()->user()->isAdmin())
+                            <form action="{{ route('tasks.comments.destroy', [$task, $comment]) }}" method="POST" onsubmit="return confirm('{{ __('messages.delete_comment_confirm') }}')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-danger">{{ __('messages.delete') }}</button>
+                            </form>
+                        @endif
+                    </div>
+                    <div class="comment-body">{!! nl2br(e($comment->body)) !!}</div>
+                    @if($comment->attachment_path)
+                        <div class="comment-attachment">
+                            @if(in_array(pathinfo($comment->attachment_name, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif', 'webp']))
+                                <a href="{{ asset('storage/' . $comment->attachment_path) }}" target="_blank">
+                                    <img src="{{ asset('storage/' . $comment->attachment_path) }}" alt="{{ $comment->attachment_name }}" class="comment-attachment-image">
+                                </a>
+                            @else
+                                <a href="{{ asset('storage/' . $comment->attachment_path) }}" target="_blank" class="comment-attachment-file">
+                                    <span class="attachment-icon">&#128196;</span> {{ $comment->attachment_name }}
+                                </a>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+    @else
+        <p class="empty-state-inline">{{ __('messages.no_comments') }}</p>
+    @endif
+</div>
 @endsection
