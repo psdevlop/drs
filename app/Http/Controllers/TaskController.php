@@ -15,10 +15,10 @@ class TaskController extends Controller
     {
         $userId = $request->user()->id;
 
-        $query = Task::with(['assignee', 'user'])
+        $query = Task::with(['assignees', 'user'])
             ->where(function ($q) use ($userId) {
                 $q->where('user_id', $userId)
-                  ->orWhere('assigned_to', $userId);
+                  ->orWhereHas('assignees', fn ($q2) => $q2->where('users.id', $userId));
             });
 
         if ($request->filled('status')) {
@@ -45,7 +45,9 @@ class TaskController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'expected_end_date' => ['nullable', 'date'],
-            'assigned_to' => ['nullable', 'exists:users,id'],
+            'assigned_to' => ['nullable', 'array'],
+            'assigned_to.*' => ['exists:users,id'],
+            'requested_by' => ['nullable', 'exists:users,id'],
             'status' => ['required', 'in:pending,in_progress,completed'],
             'progress' => ['required', 'integer', 'min:0', 'max:100'],
             'priority' => ['required', 'in:low,medium,high'],
@@ -53,33 +55,41 @@ class TaskController extends Controller
             'due_date' => ['nullable', 'date', 'after_or_equal:start_date'],
         ]);
 
+        $assignedUsers = $validated['assigned_to'] ?? [];
+        unset($validated['assigned_to']);
+
         $task = $request->user()->tasks()->create($validated);
+
+        if (!empty($assignedUsers)) {
+            $task->assignees()->sync($assignedUsers);
+        }
 
         $this->handleAttachments($request, $task);
 
-        // Notify assigned user
-        if ($task->assigned_to && $task->assigned_to !== $request->user()->id) {
-            Notification::create([
-                'user_id' => $task->assigned_to,
-                'type' => 'task_assigned',
-                'title' => __('messages.notif_task_assigned_title'),
-                'message' => __('messages.notif_task_assigned_message', ['task' => $task->title, 'user' => $request->user()->name]),
-                'link' => route('tasks.show', $task),
-            ]);
-        }
-
-        // Notify admins about new task
-        $admins = User::where('role', '!=', 'user')->where('id', '!=', $request->user()->id)->get();
-        foreach ($admins as $admin) {
-            if ($admin->id !== $task->assigned_to) {
+        // Notify assigned users
+        foreach ($assignedUsers as $assigneeId) {
+            if ((int) $assigneeId !== $request->user()->id) {
                 Notification::create([
-                    'user_id' => $admin->id,
-                    'type' => 'task_created',
-                    'title' => __('messages.notif_task_created_title'),
-                    'message' => __('messages.notif_task_created_message', ['task' => $task->title, 'user' => $request->user()->name]),
+                    'user_id' => $assigneeId,
+                    'type' => 'task_assigned',
+                    'title' => __('messages.notif_task_assigned_title'),
+                    'message' => __('messages.notif_task_assigned_message', ['task' => $task->title, 'user' => $request->user()->name]),
                     'link' => route('tasks.show', $task),
                 ]);
             }
+        }
+
+        // Notify admins about new task
+        $notifiedIds = array_merge($assignedUsers, [$request->user()->id]);
+        $admins = User::where('role', '!=', 'user')->whereNotIn('id', $notifiedIds)->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id' => $admin->id,
+                'type' => 'task_created',
+                'title' => __('messages.notif_task_created_title'),
+                'message' => __('messages.notif_task_created_message', ['task' => $task->title, 'user' => $request->user()->name]),
+                'link' => route('tasks.show', $task),
+            ]);
         }
 
         return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
@@ -88,14 +98,14 @@ class TaskController extends Controller
     public function show(Task $task)
     {
         $this->authorizeTask($task);
-        $task->load(['user', 'assignee', 'attachments']);
+        $task->load(['user', 'assignees', 'requester', 'attachments']);
         return view('tasks.show', compact('task'));
     }
 
     public function edit(Task $task)
     {
         $this->authorizeTask($task);
-        $task->load('attachments');
+        $task->load(['attachments', 'assignees']);
         $users = User::orderBy('name')->get();
         return view('tasks.edit', compact('task', 'users'));
     }
@@ -108,13 +118,18 @@ class TaskController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'expected_end_date' => ['nullable', 'date'],
-            'assigned_to' => ['nullable', 'exists:users,id'],
+            'assigned_to' => ['nullable', 'array'],
+            'assigned_to.*' => ['exists:users,id'],
+            'requested_by' => ['nullable', 'exists:users,id'],
             'status' => ['required', 'in:pending,in_progress,completed'],
             'progress' => ['required', 'integer', 'min:0', 'max:100'],
             'priority' => ['required', 'in:low,medium,high'],
             'start_date' => ['nullable', 'date'],
             'due_date' => ['nullable', 'date', 'after_or_equal:start_date'],
         ]);
+
+        $assignedUsers = $validated['assigned_to'] ?? [];
+        unset($validated['assigned_to']);
 
         if ($validated['status'] === 'completed') {
             $validated['progress'] = 100;
@@ -123,6 +138,7 @@ class TaskController extends Controller
         }
 
         $task->update($validated);
+        $task->assignees()->sync($assignedUsers);
 
         $this->handleAttachments($request, $task);
 
@@ -137,15 +153,17 @@ class TaskController extends Controller
             ]);
         }
 
-        // Notify assigned user if updated by someone else
-        if ($task->assigned_to && $task->assigned_to !== $request->user()->id && $task->assigned_to !== $task->user_id) {
-            Notification::create([
-                'user_id' => $task->assigned_to,
-                'type' => 'task_updated',
-                'title' => __('messages.notif_task_updated_title'),
-                'message' => __('messages.notif_task_updated_message', ['task' => $task->title, 'user' => $request->user()->name]),
-                'link' => route('tasks.show', $task),
-            ]);
+        // Notify assigned users if updated by someone else
+        foreach ($assignedUsers as $assigneeId) {
+            if ((int) $assigneeId !== $request->user()->id && (int) $assigneeId !== $task->user_id) {
+                Notification::create([
+                    'user_id' => $assigneeId,
+                    'type' => 'task_updated',
+                    'title' => __('messages.notif_task_updated_title'),
+                    'message' => __('messages.notif_task_updated_message', ['task' => $task->title, 'user' => $request->user()->name]),
+                    'link' => route('tasks.show', $task),
+                ]);
+            }
         }
 
         return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
@@ -178,15 +196,18 @@ class TaskController extends Controller
             ]);
         }
 
-        // Notify assigned user if status changed by someone else
-        if ($task->assigned_to && $task->assigned_to !== auth()->id() && $task->assigned_to !== $task->user_id) {
-            Notification::create([
-                'user_id' => $task->assigned_to,
-                'type' => 'task_updated',
-                'title' => __('messages.notif_task_updated_title'),
-                'message' => __('messages.notif_task_status_changed_message', ['task' => $task->title, 'user' => auth()->user()->name, 'status' => $validated['status']]),
-                'link' => route('tasks.show', $task),
-            ]);
+        // Notify assigned users if status changed by someone else
+        $task->load('assignees');
+        foreach ($task->assignees as $assignee) {
+            if ($assignee->id !== auth()->id() && $assignee->id !== $task->user_id) {
+                Notification::create([
+                    'user_id' => $assignee->id,
+                    'type' => 'task_updated',
+                    'title' => __('messages.notif_task_updated_title'),
+                    'message' => __('messages.notif_task_status_changed_message', ['task' => $task->title, 'user' => auth()->user()->name, 'status' => $validated['status']]),
+                    'link' => route('tasks.show', $task),
+                ]);
+            }
         }
 
         return redirect()->back()->with('success', __('messages.task_updated'));
@@ -259,7 +280,7 @@ class TaskController extends Controller
     private function authorizeTask(Task $task): void
     {
         $userId = auth()->id();
-        if ($task->user_id !== $userId && $task->assigned_to !== $userId) {
+        if ($task->user_id !== $userId && !$task->assignees()->where('users.id', $userId)->exists()) {
             abort(403);
         }
     }

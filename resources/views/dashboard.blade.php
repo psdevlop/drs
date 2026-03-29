@@ -78,8 +78,8 @@
                         <div class="text-bold">{{ $task->title }}</div>
                         <div class="list-item-meta">
                             <span class="badge badge-{{ $task->priority }}">{{ __('messages.' . $task->priority) }}</span>
-                            @if($task->assignee)
-                                <span class="list-item-assignee">&rarr; {{ $task->assignee->name }}</span>
+                            @if($task->assignees->count())
+                                <span class="list-item-assignee">&rarr; {{ $task->assignees->pluck('name')->join(', ') }}</span>
                             @endif
                         </div>
                     </div>

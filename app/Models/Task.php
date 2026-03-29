@@ -11,7 +11,7 @@ class Task extends Model
 
     protected $fillable = [
         'user_id',
-        'assigned_to',
+        'requested_by',
         'title',
         'description',
         'expected_end_date',
@@ -42,9 +42,14 @@ class Task extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function assignee()
+    public function assignees()
     {
-        return $this->belongsTo(User::class, 'assigned_to');
+        return $this->belongsToMany(User::class, 'task_user')->withTimestamps();
+    }
+
+    public function requester()
+    {
+        return $this->belongsTo(User::class, 'requested_by');
     }
 
     public function attachments()

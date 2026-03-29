@@ -37,7 +37,8 @@ class DailyReportController extends Controller
 
         $userId = auth()->id();
         $tasks = Task::where(function ($q) use ($userId) {
-            $q->where('user_id', $userId)->orWhere('assigned_to', $userId);
+            $q->where('user_id', $userId)
+              ->orWhereHas('assignees', fn ($q2) => $q2->where('users.id', $userId));
         })->whereIn('status', ['pending', 'in_progress', 'completed'])->orderBy('title')->get();
 
         return view('reports.create', compact('tasks'));
@@ -98,7 +99,8 @@ class DailyReportController extends Controller
         $this->authorizeReport($report);
         $userId = auth()->id();
         $tasks = Task::where(function ($q) use ($userId) {
-            $q->where('user_id', $userId)->orWhere('assigned_to', $userId);
+            $q->where('user_id', $userId)
+              ->orWhereHas('assignees', fn ($q2) => $q2->where('users.id', $userId));
         })->whereIn('status', ['pending', 'in_progress', 'completed'])->orderBy('title')->get();
 
         return view('reports.edit', compact('report', 'tasks'));

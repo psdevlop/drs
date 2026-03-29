@@ -30,7 +30,20 @@
 
         <div class="detail-row">
             <div class="detail-label">{{ __('messages.assigned_to') }}</div>
-            <div class="detail-value">{{ $task->assignee ? $task->assignee->name . ' (' . $task->assignee->email . ')' : '-' }}</div>
+            <div class="detail-value">
+                @if($task->assignees->count())
+                    @foreach($task->assignees as $assignee)
+                        <span class="badge badge-user">{{ $assignee->name }}</span>
+                    @endforeach
+                @else
+                    -
+                @endif
+            </div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">{{ __('messages.requester') }}</div>
+            <div class="detail-value">{{ $task->requester ? $task->requester->name . ' (' . $task->requester->email . ')' : '-' }}</div>
         </div>
 
         <div class="detail-row">

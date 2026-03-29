@@ -27,10 +27,10 @@ class CalendarController extends Controller
         $events = [];
 
         // Tasks
-        $taskQuery = Task::with(['assignee', 'user'])
+        $taskQuery = Task::with(['assignees', 'user'])
             ->where(function ($q) use ($userId) {
                 $q->where('user_id', $userId)
-                  ->orWhere('assigned_to', $userId);
+                  ->orWhereHas('assignees', fn ($q2) => $q2->where('users.id', $userId));
             })
             ->where(function ($q) {
                 $q->whereNotNull('start_date')
@@ -72,7 +72,7 @@ class CalendarController extends Controller
                     'status' => $task->status,
                     'priority' => $task->priority,
                     'progress' => $task->progress,
-                    'assignee' => $task->assignee?->name ?? '-',
+                    'assignee' => $task->assignees->pluck('name')->join(', ') ?: '-',
                     'start_date' => $task->start_date?->format('M d, Y') ?? '-',
                     'end_date' => $task->expected_end_date?->format('M d, Y') ?? $task->due_date?->format('M d, Y') ?? '-',
                 ],
@@ -141,10 +141,10 @@ class CalendarController extends Controller
     {
         $userId = auth()->id();
 
-        $query = Task::with(['assignee', 'user'])
+        $query = Task::with(['assignees', 'user'])
             ->where(function ($q) use ($userId) {
                 $q->where('user_id', $userId)
-                  ->orWhere('assigned_to', $userId);
+                  ->orWhereHas('assignees', fn ($q2) => $q2->where('users.id', $userId));
             })
             ->where(function ($q) {
                 $q->whereNotNull('start_date')
@@ -189,7 +189,7 @@ class CalendarController extends Controller
                     'status' => $task->status,
                     'priority' => $task->priority,
                     'progress' => $task->progress,
-                    'assignee' => $task->assignee?->name ?? '-',
+                    'assignee' => $task->assignees->pluck('name')->join(', ') ?: '-',
                     'start_date' => $task->start_date?->format('M d, Y') ?? '-',
                     'end_date' => $task->expected_end_date?->format('M d, Y') ?? $task->due_date?->format('M d, Y') ?? '-',
                 ],

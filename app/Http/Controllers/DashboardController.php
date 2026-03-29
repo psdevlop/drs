@@ -17,7 +17,7 @@ class DashboardController extends Controller
         $userTasksQuery = function () use ($userId) {
             return Task::where(function ($q) use ($userId) {
                 $q->where('user_id', $userId)
-                  ->orWhere('assigned_to', $userId);
+                  ->orWhereHas('assignees', fn ($q2) => $q2->where('users.id', $userId));
             });
         };
 
@@ -28,10 +28,10 @@ class DashboardController extends Controller
             'completed' => $userTasksQuery()->where('status', 'completed')->count(),
         ];
 
-        $recentTasks = Task::with(['assignee', 'user'])
+        $recentTasks = Task::with(['assignees', 'user'])
             ->where(function ($q) use ($userId) {
                 $q->where('user_id', $userId)
-                  ->orWhere('assigned_to', $userId);
+                  ->orWhereHas('assignees', fn ($q2) => $q2->where('users.id', $userId));
             })
             ->latest()
             ->take(5)

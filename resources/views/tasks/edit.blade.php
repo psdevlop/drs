@@ -22,13 +22,23 @@
         </div>
         <div class="form-group">
             <label for="assigned_to">{{ __('messages.assign_to') }}</label>
-            <select id="assigned_to" name="assigned_to" class="form-control">
-                <option value="">{{ __('messages.unassigned') }}</option>
+            <select id="assigned_to" name="assigned_to[]" class="form-control" multiple size="4">
                 @foreach($users as $user)
-                    <option value="{{ $user->id }}" {{ old('assigned_to', $task->assigned_to) == $user->id ? 'selected' : '' }}>{{ $user->name }} ({{ $user->email }})</option>
+                    <option value="{{ $user->id }}" {{ in_array($user->id, old('assigned_to', $task->assignees->pluck('id')->toArray())) ? 'selected' : '' }}>{{ $user->name }} ({{ $user->email }})</option>
                 @endforeach
             </select>
+            <div class="form-hint">{{ __('messages.multi_select_hint') }}</div>
             @error('assigned_to') <div class="error-text">{{ $message }}</div> @enderror
+        </div>
+        <div class="form-group">
+            <label for="requested_by">{{ __('messages.requester') }}</label>
+            <select id="requested_by" name="requested_by" class="form-control">
+                <option value="">-- {{ __('messages.select') }} --</option>
+                @foreach($users as $user)
+                    <option value="{{ $user->id }}" {{ old('requested_by', $task->requested_by) == $user->id ? 'selected' : '' }}>{{ $user->name }} ({{ $user->email }})</option>
+                @endforeach
+            </select>
+            @error('requested_by') <div class="error-text">{{ $message }}</div> @enderror
         </div>
         <div class="form-group">
             <label for="expected_end_date">{{ __('messages.expected_end_date') }}</label>

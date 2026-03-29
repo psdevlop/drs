@@ -55,11 +55,11 @@
                             <td>
                                 <div class="text-bold">{{ $task->title }}</div>
                                 @if($task->description)
-                                    <div class="text-muted text-sm">{{ Str::limit($task->description, 60) }}</div>
+                                    <div class="text-muted text-sm">{!! Str::limit(strip_tags($task->description), 60) !!}</div>
                                 @endif
                             </td>
                             <td>{{ $task->user->name }}</td>
-                            <td>{{ $task->assignee?->name ?? '-' }}</td>
+                            <td>{{ $task->assignees->pluck('name')->join(', ') ?: '-' }}</td>
                             <td>
                                 <form action="{{ route('tasks.update-status', $task) }}" method="POST">
                                     @csrf @method('PATCH')

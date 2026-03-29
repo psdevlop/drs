@@ -105,6 +105,7 @@ select.form-control { appearance: auto; -webkit-appearance: menulist; -moz-appea
 .badge-low { background: #e5e7eb; color: #374151; }
 .badge-medium { background: #fef3c7; color: #92400e; }
 .badge-high { background: #fee2e2; color: #991b1b; }
+.badge-user { background: #e0e7ff; color: #3730a3; margin-right: 0.25rem; }
 .badge-admin { background: #ede9fe; color: #5b21b6; }
 .badge-super_admin { background: #fef9c4; color: #854d0e; }
 .badge-user { background: #e0f2fe; color: #0c4a6e; }
