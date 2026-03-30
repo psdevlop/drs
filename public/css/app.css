@@ -126,6 +126,22 @@ select.form-control { appearance: auto; -webkit-appearance: menulist; -moz-appea
 .comment-attachment-image { max-width: 300px; max-height: 200px; border-radius: 6px; border: 1px solid #e5e7eb; }
 .comment-attachment-file { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.4rem 0.75rem; background: #f3f4f6; border-radius: 6px; font-size: 0.85rem; color: #4b5563; text-decoration: none; }
 .comment-attachment-file:hover { background: #e5e7eb; }
+
+.rotation-user-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.rotation-user-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer; transition: background 0.15s; }
+.rotation-user-item:hover { background: #f3f4f6; }
+.rotation-user-item input[type="checkbox"]:checked + .rotation-user-name { font-weight: 600; }
+.rotation-user-name { flex: 1; font-size: 0.9rem; }
+.rotation-order-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: #818cf8; color: #fff; border-radius: 50%; font-size: 0.75rem; font-weight: 700; }
+.rotation-order-badge:empty { display: none; }
+.preview-today { background: #eff6ff !important; }
+.preview-weekend { color: #9ca3af; }
+.checkbox-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9rem; }
+.form-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
+.holiday-days-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; }
+.holiday-day-item { padding: 0.5rem 0.75rem; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; }
+.holiday-day-item:has(input:checked) { background: #fee2e2; border-color: #fca5a5; }
+.badge-pic { background: #fef3c7; color: #92400e; font-weight: 600; border: 1px solid #f59e0b; }
 .badge-admin { background: #ede9fe; color: #5b21b6; }
 .badge-super_admin { background: #fef9c4; color: #854d0e; }
 .badge-user { background: #e0f2fe; color: #0c4a6e; }

@@ -10,6 +10,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnCallController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -87,7 +88,16 @@ Route::middleware('auth')->group(function () {
     Route::resource('reports', DailyReportController::class);
 
     // On Call
-    Route::resource('oncall', OnCallController::class)->except(['show']);
+    Route::get('oncall', [OnCallController::class, 'index'])->name('oncall.index');
+    Route::patch('oncall/pic-by-date', [OnCallController::class, 'updatePicByDate'])->name('oncall.update-pic-date');
+    Route::get('oncall/rotations', [OnCallController::class, 'rotations'])->name('oncall.rotations');
+    Route::get('oncall/rotations/create', [OnCallController::class, 'createRotation'])->name('oncall.rotations.create');
+    Route::post('oncall/rotations', [OnCallController::class, 'storeRotation'])->name('oncall.rotations.store');
+    Route::get('oncall/rotations/preview', [OnCallController::class, 'previewRotation'])->name('oncall.rotations.preview');
+    Route::get('oncall/rotations/{rotation}/edit', [OnCallController::class, 'editRotation'])->name('oncall.rotations.edit');
+    Route::put('oncall/rotations/{rotation}', [OnCallController::class, 'updateRotation'])->name('oncall.rotations.update');
+    Route::delete('oncall/rotations/{rotation}', [OnCallController::class, 'destroyRotation'])->name('oncall.rotations.destroy');
+    Route::post('oncall/rotations/generate', [OnCallController::class, 'generateFromRotations'])->name('oncall.rotations.generate');
 
     // Services (view only for all users)
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
@@ -106,6 +116,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/users/{user}/edit', [AdminController::class, 'editUser'])->name('users.edit');
         Route::put('/users/{user}', [AdminController::class, 'updateUser'])->name('users.update');
         Route::delete('/users/{user}', [AdminController::class, 'destroyUser'])->name('users.destroy');
+
+        // Settings
+        Route::get('/settings', [SettingController::class, 'index'])->name('settings');
+        Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
 
         // Services Management (Admin only)
         Route::resource('services', ServiceController::class);

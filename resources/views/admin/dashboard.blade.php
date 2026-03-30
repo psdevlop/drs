@@ -3,7 +3,10 @@
 @section('content')
 <div class="page-header">
     <h1>{{ __('messages.admin_dashboard') }}</h1>
-    <a href="{{ route('admin.users.index') }}" class="btn btn-primary">{{ __('messages.manage_users') }}</a>
+    <div class="actions">
+        <a href="{{ route('admin.settings') }}" class="btn btn-outline">{{ __('messages.settings') }}</a>
+        <a href="{{ route('admin.users.index') }}" class="btn btn-primary">{{ __('messages.manage_users') }}</a>
+    </div>
 </div>
 
 <div class="stats-grid">

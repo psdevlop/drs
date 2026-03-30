@@ -39,7 +39,7 @@
     <div class="tooltip-oncall-meta tooltip-meta" style="display:none;">
         <div><strong>{{ __('messages.date') }}:</strong> <span class="tooltip-oncall-date"></span></div>
         <div><strong>{{ __('messages.oncall_duty_users') }}:</strong> <span class="tooltip-oncall-users"></span></div>
-        <div><strong>{{ __('messages.oncall_notes') }}:</strong> <span class="tooltip-oncall-notes"></span></div>
+        <div><strong>{{ __('messages.person_in_charge') }}:</strong> <span class="tooltip-oncall-pic"></span></div>
     </div>
 </div>
 
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 oncallMeta.style.display = 'block';
                 tooltip.querySelector('.tooltip-oncall-date').textContent = props.date;
                 tooltip.querySelector('.tooltip-oncall-users').textContent = props.users;
-                tooltip.querySelector('.tooltip-oncall-notes').textContent = props.notes;
+                tooltip.querySelector('.tooltip-oncall-pic').textContent = props.pic;
             } else if (props.type === 'report') {
                 reportMeta.style.display = 'block';
                 tooltip.querySelector('.tooltip-report-date').textContent = props.report_date;

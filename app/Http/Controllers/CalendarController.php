@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DailyReport;
+use Carbon\Carbon;
 use App\Models\OnCall;
 use App\Models\Task;
 use Illuminate\Http\Request;
@@ -110,28 +111,57 @@ class CalendarController extends Controller
             ];
         }
 
-        // On Call
-        $onCallQuery = OnCall::with('users');
-        if ($request->filled('start') && $request->filled('end')) {
-            $onCallQuery->whereBetween('date', [$request->start, $request->end]);
-        }
+        // On Call (from rotation schedules)
+        $activeRotations = \App\Models\OnCallRotation::with('users')->where('is_active', true)->get();
+        if ($activeRotations->isNotEmpty() && $request->filled('start') && $request->filled('end')) {
+            $onCallStart = Carbon::parse($request->start);
+            $onCallEnd = Carbon::parse($request->end);
 
-        foreach ($onCallQuery->get() as $onCall) {
-            $userNames = $onCall->users->pluck('name')->join(', ');
-            $events[] = [
-                'id' => 'oncall-' . $onCall->id,
-                'title' => '📞 ' . __('messages.on_call') . ': ' . $userNames,
-                'start' => $onCall->date->format('Y-m-d'),
-                'url' => route('oncall.index'),
-                'backgroundColor' => '#ef4444',
-                'borderColor' => '#dc2626',
-                'extendedProps' => [
-                    'type' => 'oncall',
-                    'users' => $userNames,
-                    'notes' => $onCall->notes ?? '-',
-                    'date' => $onCall->date->format('M d, Y'),
-                ],
-            ];
+            for ($date = $onCallStart->copy(); $date->lte($onCallEnd); $date->addDay()) {
+                $dutyUsers = collect();
+                $picName = null;
+
+                foreach ($activeRotations as $rotation) {
+                    $users = $rotation->getUsersForDate($date);
+                    foreach ($users as $u) {
+                        $dutyUsers->push($u);
+                        if ($u->is_pic ?? false) {
+                            $picName = $u->name;
+                        }
+                    }
+                }
+
+                // Check for manual PIC override
+                $manualEntry = OnCall::with('pic')->where('date', $date->format('Y-m-d'))->first();
+                if ($manualEntry && $manualEntry->pic) {
+                    $picName = $manualEntry->pic->name;
+                }
+
+                if ($dutyUsers->isEmpty()) {
+                    continue;
+                }
+
+                $userNames = $dutyUsers->pluck('name')->unique()->join(', ');
+                $title = '📞 ' . __('messages.on_call') . ': ' . $userNames;
+                if ($picName) {
+                    $title .= ' (PIC: ' . $picName . ')';
+                }
+
+                $events[] = [
+                    'id' => 'oncall-' . $date->format('Y-m-d'),
+                    'title' => $title,
+                    'start' => $date->format('Y-m-d'),
+                    'url' => route('oncall.index'),
+                    'backgroundColor' => '#ef4444',
+                    'borderColor' => '#dc2626',
+                    'extendedProps' => [
+                        'type' => 'oncall',
+                        'users' => $userNames,
+                        'pic' => $picName ?? '-',
+                        'date' => $date->format('M d, Y'),
+                    ],
+                ];
+            }
         }
 
         return response()->json($events);

@@ -12,11 +12,7 @@ class DailyReportController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->user()->isAdmin()) {
-            $query = DailyReport::with('user');
-        } else {
-            $query = $request->user()->dailyReports();
-        }
+        $query = DailyReport::with('user');
 
         if ($request->filled('date')) {
             $query->where('report_date', $request->date);
@@ -89,7 +85,6 @@ class DailyReportController extends Controller
 
     public function show(DailyReport $report)
     {
-        $this->authorizeReport($report);
         $report->load(['task', 'user']);
         return view('reports.show', compact('report'));
     }

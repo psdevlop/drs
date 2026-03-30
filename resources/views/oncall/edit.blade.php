@@ -37,6 +37,18 @@
         </div>
 
         <div class="form-group">
+            <label for="pic_user_id">{{ __('messages.person_in_charge') }}</label>
+            <select id="pic_user_id" name="pic_user_id" class="form-control">
+                <option value="">-- {{ __('messages.select') }} --</option>
+                @foreach($users as $user)
+                    <option value="{{ $user->id }}" {{ old('pic_user_id', $oncall->pic_user_id) == $user->id ? 'selected' : '' }}>{{ $user->name }} ({{ $user->email }})</option>
+                @endforeach
+            </select>
+            <div class="form-hint">{{ __('messages.pic_hint') }}</div>
+            @error('pic_user_id') <div class="error-text">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="form-group">
             <label for="notes">{{ __('messages.oncall_notes') }} <small>({{ __('messages.optional') }})</small></label>
             <textarea id="notes" name="notes" class="form-control" rows="3" placeholder="{{ __('messages.oncall_notes_placeholder') }}">{{ old('notes', $oncall->notes) }}</textarea>
             @error('notes') <div class="error-text">{{ $message }}</div> @enderror
