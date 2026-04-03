@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnCallController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TaskController;
@@ -86,6 +87,11 @@ Route::middleware('auth')->group(function () {
 
     // Daily Reports
     Route::resource('reports', DailyReportController::class);
+
+    // Attendance
+    Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+    Route::post('attendance/check-in', [AttendanceController::class, 'checkIn'])->name('attendance.check-in');
+    Route::post('attendance/check-out', [AttendanceController::class, 'checkOut'])->name('attendance.check-out');
 
     // On Call
     Route::get('oncall', [OnCallController::class, 'index'])->name('oncall.index');

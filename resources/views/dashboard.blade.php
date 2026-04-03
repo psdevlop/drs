@@ -16,6 +16,38 @@
     </div>
 </div>
 
+{{-- Attendance Widget --}}
+<div class="card attendance-widget">
+    <div class="attendance-widget-row">
+        <div class="attendance-status-info">
+            @if(!$todayAttendance || !$todayAttendance->check_in)
+                <span class="attendance-status-dot status-absent"></span>
+                <span>{{ __('messages.not_checked_in_today') }}</span>
+            @elseif($todayAttendance->isCheckedIn())
+                <span class="attendance-status-dot status-checked-in"></span>
+                <span>{{ __('messages.checked_in_at') }} <strong>{{ $todayAttendance->check_in->format('h:i A') }}</strong></span>
+            @else
+                <span class="attendance-status-dot status-completed"></span>
+                <span>{{ __('messages.todays_attendance_complete') }} &mdash; {{ $todayAttendance->check_in->format('h:i A') }} ~ {{ $todayAttendance->check_out->format('h:i A') }} <strong>({{ $todayAttendance->total_hours }}h)</strong></span>
+            @endif
+        </div>
+        <div class="attendance-widget-actions">
+            @if(!$todayAttendance || !$todayAttendance->check_in)
+                <form action="{{ route('attendance.check-in') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="btn btn-success btn-sm">{{ __('messages.check_in') }}</button>
+                </form>
+            @elseif($todayAttendance->isCheckedIn())
+                <form action="{{ route('attendance.check-out') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('{{ __('messages.check_out_confirm') }}')">{{ __('messages.check_out') }}</button>
+                </form>
+            @endif
+            <a href="{{ route('attendance.index') }}" class="btn btn-outline btn-sm">{{ __('messages.attendance') }}</a>
+        </div>
+    </div>
+</div>
+
 <div class="stats-grid">
     <div class="stat-card blue">
         <div class="stat-value">{{ $taskStats['total'] }}</div>

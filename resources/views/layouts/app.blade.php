@@ -21,6 +21,7 @@
                 <li><a href="{{ route('reports.index') }}" class="{{ request()->routeIs('reports.*') ? 'active' : '' }}">{{ __('messages.reports') }}</a></li>
                 <li><a href="{{ route('schedule') }}" class="{{ request()->routeIs('schedule*') ? 'active' : '' }}">{{ __('messages.schedule_management') }}</a></li>
                 <li><a href="{{ route('announcements.index') }}" class="{{ request()->routeIs('announcements.*') ? 'active' : '' }}">{{ __('messages.announcement_board') }}</a></li>
+                <li><a href="{{ route('attendance.index') }}" class="{{ request()->routeIs('attendance.*') ? 'active' : '' }}">{{ __('messages.attendance') }}</a></li>
                 <li><a href="{{ route('oncall.index') }}" class="{{ request()->routeIs('oncall.*') || request()->routeIs('oncall.rotations*') ? 'active' : '' }}">{{ __('messages.on_call') }}</a></li>
                 <li><a href="{{ route('services.index') }}" class="{{ request()->routeIs('services.*') || request()->routeIs('admin.services.*') ? 'active' : '' }}">{{ __('messages.services') }}</a></li>
                 @if(auth()->user()->isAdmin())

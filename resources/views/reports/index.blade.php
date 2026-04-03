@@ -45,11 +45,13 @@
                             <td>
                                 <div class="actions">
                                     <a href="{{ route('reports.show', $report) }}" class="btn btn-sm btn-outline">{{ __('messages.view') }}</a>
-                                    <a href="{{ route('reports.edit', $report) }}" class="btn btn-sm btn-outline">{{ __('messages.edit') }}</a>
-                                    <form action="{{ route('reports.destroy', $report) }}" method="POST" onsubmit="return confirm('{{ __('messages.delete_report_confirm') }}')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">{{ __('messages.delete') }}</button>
-                                    </form>
+                                    @if($report->user_id === auth()->id())
+                                        <a href="{{ route('reports.edit', $report) }}" class="btn btn-sm btn-outline">{{ __('messages.edit') }}</a>
+                                        <form action="{{ route('reports.destroy', $report) }}" method="POST" onsubmit="return confirm('{{ __('messages.delete_report_confirm') }}')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger">{{ __('messages.delete') }}</button>
+                                        </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

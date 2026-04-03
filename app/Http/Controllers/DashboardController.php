@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Announcement;
+use App\Models\Attendance;
 use App\Models\DailyReport;
 use App\Models\Task;
 use Illuminate\Http\Request;
@@ -50,6 +51,8 @@ class DashboardController extends Controller
             ->take(3)
             ->get();
 
-        return view('dashboard', compact('taskStats', 'recentTasks', 'recentReports', 'todayReport', 'latestAnnouncements'));
+        $todayAttendance = Attendance::where('user_id', $userId)->where('date', today())->first();
+
+        return view('dashboard', compact('taskStats', 'recentTasks', 'recentReports', 'todayReport', 'latestAnnouncements', 'todayAttendance'));
     }
 }
