@@ -16,11 +16,14 @@ class TaskController extends Controller
     {
         $userId = $request->user()->id;
 
-        $query = Task::with(['assignees', 'user'])
-            ->where(function ($q) use ($userId) {
+        $query = Task::with(['assignees', 'user']);
+
+        if (!$request->user()->isAdmin()) {
+            $query->where(function ($q) use ($userId) {
                 $q->where('user_id', $userId)
                   ->orWhereHas('assignees', fn ($q2) => $q2->where('users.id', $userId));
             });
+        }
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -36,7 +39,7 @@ class TaskController extends Controller
 
     public function create()
     {
-        $users = User::orderBy('name')->get();
+        $users = User::where('role', '!=', 'super_admin')->orderBy('name')->get();
         return view('tasks.create', compact('users'));
     }
 
@@ -107,7 +110,7 @@ class TaskController extends Controller
     {
         $this->authorizeTask($task);
         $task->load(['attachments', 'assignees']);
-        $users = User::orderBy('name')->get();
+        $users = User::where('role', '!=', 'super_admin')->orderBy('name')->get();
         return view('tasks.edit', compact('task', 'users'));
     }
 
@@ -346,6 +349,9 @@ class TaskController extends Controller
 
     private function authorizeTask(Task $task): void
     {
+        if (auth()->user()->isAdmin()) {
+            return;
+        }
         $userId = auth()->id();
         if ($task->user_id !== $userId && !$task->assignees()->where('users.id', $userId)->exists()) {
             abort(403);
