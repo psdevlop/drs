@@ -16,6 +16,7 @@
             <option value="">{{ __('messages.all_statuses') }}</option>
             <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>{{ __('messages.pending') }}</option>
             <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>{{ __('messages.in_progress') }}</option>
+            <option value="in_review" {{ request('status') == 'in_review' ? 'selected' : '' }}>{{ __('messages.in_review') }}</option>
             <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>{{ __('messages.completed') }}</option>
         </select>
     </div>
@@ -66,6 +67,7 @@
                                     <select name="status" onchange="this.form.submit()" class="status-select status-{{ $task->status }}">
                                         <option value="pending" {{ $task->status == 'pending' ? 'selected' : '' }}>{{ __('messages.pending') }}</option>
                                         <option value="in_progress" {{ $task->status == 'in_progress' ? 'selected' : '' }}>{{ __('messages.in_progress') }}</option>
+                                        <option value="in_review" {{ $task->status == 'in_review' ? 'selected' : '' }}>{{ __('messages.in_review') }}</option>
                                         <option value="completed" {{ $task->status == 'completed' ? 'selected' : '' }}>{{ __('messages.completed') }}</option>
                                     </select>
                                 </form>

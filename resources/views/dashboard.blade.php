@@ -61,6 +61,10 @@
         <div class="stat-value">{{ $taskStats['in_progress'] }}</div>
         <div class="stat-label">{{ __('messages.in_progress') }}</div>
     </div>
+    <div class="stat-card purple">
+        <div class="stat-value">{{ $taskStats['in_review'] }}</div>
+        <div class="stat-label">{{ __('messages.in_review') }}</div>
+    </div>
     <div class="stat-card green">
         <div class="stat-value">{{ $taskStats['completed'] }}</div>
         <div class="stat-label">{{ __('messages.completed') }}</div>

@@ -51,6 +51,7 @@
                 <select id="status" name="status" class="form-control">
                     <option value="pending" {{ old('status', $task->status) == 'pending' ? 'selected' : '' }}>{{ __('messages.pending') }}</option>
                     <option value="in_progress" {{ old('status', $task->status) == 'in_progress' ? 'selected' : '' }}>{{ __('messages.in_progress') }}</option>
+                    <option value="in_review" {{ old('status', $task->status) == 'in_review' ? 'selected' : '' }}>{{ __('messages.in_review') }}</option>
                     <option value="completed" {{ old('status', $task->status) == 'completed' ? 'selected' : '' }}>{{ __('messages.completed') }}</option>
                 </select>
             </div>

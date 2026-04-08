@@ -52,7 +52,7 @@ class TaskController extends Controller
             'assigned_to' => ['nullable', 'array'],
             'assigned_to.*' => ['exists:users,id'],
             'requested_by' => ['nullable', 'exists:users,id'],
-            'status' => ['required', 'in:pending,in_progress,completed'],
+            'status' => ['required', 'in:pending,in_progress,in_review,completed'],
             'progress' => ['required', 'integer', 'min:0', 'max:100'],
             'priority' => ['required', 'in:low,medium,high'],
             'start_date' => ['nullable', 'date'],
@@ -125,7 +125,7 @@ class TaskController extends Controller
             'assigned_to' => ['nullable', 'array'],
             'assigned_to.*' => ['exists:users,id'],
             'requested_by' => ['nullable', 'exists:users,id'],
-            'status' => ['required', 'in:pending,in_progress,completed'],
+            'status' => ['required', 'in:pending,in_progress,in_review,completed'],
             'progress' => ['required', 'integer', 'min:0', 'max:100'],
             'priority' => ['required', 'in:low,medium,high'],
             'start_date' => ['nullable', 'date'],
@@ -178,7 +178,7 @@ class TaskController extends Controller
         $this->authorizeTask($task);
 
         $validated = $request->validate([
-            'status' => ['required', 'in:pending,in_progress,completed'],
+            'status' => ['required', 'in:pending,in_progress,in_review,completed'],
         ]);
 
         if ($validated['status'] === 'completed') {

@@ -26,6 +26,7 @@ class DashboardController extends Controller
             'total' => $userTasksQuery()->count(),
             'pending' => $userTasksQuery()->where('status', 'pending')->count(),
             'in_progress' => $userTasksQuery()->where('status', 'in_progress')->count(),
+            'in_review' => $userTasksQuery()->where('status', 'in_review')->count(),
             'completed' => $userTasksQuery()->where('status', 'completed')->count(),
         ];
 

@@ -18,6 +18,7 @@ return [
     'total_tasks' => 'Total Tasks',
     'pending' => 'Pending',
     'in_progress' => 'In Progress',
+    'in_review' => 'In Review',
     'completed' => 'Completed',
     'today_report_submitted' => "You've already submitted today's report.",
     'today_report_not_submitted' => "You haven't submitted today's report yet.",

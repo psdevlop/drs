@@ -18,6 +18,7 @@ return [
     'total_tasks' => '전체 작업',
     'pending' => '대기 중',
     'in_progress' => '진행 중',
+    'in_review' => '검토 중',
     'completed' => '완료',
     'today_report_submitted' => '오늘의 보고서를 이미 제출했습니다.',
     'today_report_not_submitted' => '아직 오늘의 보고서를 제출하지 않았습니다.',
