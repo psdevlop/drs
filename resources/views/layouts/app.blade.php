@@ -17,13 +17,49 @@
         <div class="navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav">
                 <li><a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">{{ __('messages.dashboard') }}</a></li>
-                <li><a href="{{ route('tasks.index') }}" class="{{ request()->routeIs('tasks.*') || request()->routeIs('calendar') ? 'active' : '' }}">{{ __('messages.tasks') }}</a></li>
-                <li><a href="{{ route('reports.index') }}" class="{{ request()->routeIs('reports.*') ? 'active' : '' }}">{{ __('messages.reports') }}</a></li>
+                <li class="navbar-dropdown">
+                    <a href="{{ route('tasks.index') }}" class="{{ request()->routeIs('tasks.*') || request()->routeIs('calendar') ? 'active' : '' }}">{{ __('messages.tasks') }} <span class="caret">&#9662;</span></a>
+                    <ul class="navbar-submenu">
+                        <li><a href="{{ route('tasks.index') }}">{{ __('messages.my_tasks') }}</a></li>
+                        <li><a href="{{ route('tasks.create') }}">{{ __('messages.new_task') }}</a></li>
+                        <li><a href="{{ route('calendar') }}">{{ __('messages.task_calendar') }}</a></li>
+                    </ul>
+                </li>
+                <li class="navbar-dropdown">
+                    <a href="{{ route('reports.index') }}" class="{{ request()->routeIs('reports.*') ? 'active' : '' }}">{{ __('messages.reports') }} <span class="caret">&#9662;</span></a>
+                    <ul class="navbar-submenu">
+                        <li><a href="{{ route('reports.index') }}">{{ __('messages.my_daily_reports') }}</a></li>
+                        <li><a href="{{ route('reports.create') }}">{{ __('messages.new_report') }}</a></li>
+                    </ul>
+                </li>
                 <li><a href="{{ route('schedule') }}" class="{{ request()->routeIs('schedule*') ? 'active' : '' }}">{{ __('messages.schedule_management') }}</a></li>
-                <li><a href="{{ route('announcements.index') }}" class="{{ request()->routeIs('announcements.*') ? 'active' : '' }}">{{ __('messages.announcement_board') }}</a></li>
+                <li class="navbar-dropdown">
+                    <a href="{{ route('announcements.index') }}" class="{{ request()->routeIs('announcements.*') ? 'active' : '' }}">{{ __('messages.announcement_board') }} <span class="caret">&#9662;</span></a>
+                    <ul class="navbar-submenu">
+                        <li><a href="{{ route('announcements.index') }}">{{ __('messages.view_all_announcements') }}</a></li>
+                        @if(auth()->user()->isAdmin())
+                            <li><a href="{{ route('announcements.create') }}">{{ __('messages.new_announcement') }}</a></li>
+                        @endif
+                    </ul>
+                </li>
                 <li><a href="{{ route('attendance.index') }}" class="{{ request()->routeIs('attendance.*') ? 'active' : '' }}">{{ __('messages.attendance') }}</a></li>
-                <li><a href="{{ route('oncall.index') }}" class="{{ request()->routeIs('oncall.*') || request()->routeIs('oncall.rotations*') ? 'active' : '' }}">{{ __('messages.on_call') }}</a></li>
-                <li><a href="{{ route('services.index') }}" class="{{ request()->routeIs('services.*') || request()->routeIs('admin.services.*') ? 'active' : '' }}">{{ __('messages.services') }}</a></li>
+                <li class="navbar-dropdown">
+                    <a href="{{ route('oncall.index') }}" class="{{ request()->routeIs('oncall.*') || request()->routeIs('oncall.rotations*') ? 'active' : '' }}">{{ __('messages.on_call') }} <span class="caret">&#9662;</span></a>
+                    <ul class="navbar-submenu">
+                        <li><a href="{{ route('oncall.index') }}">{{ __('messages.oncall_schedule') }}</a></li>
+                        <li><a href="{{ route('oncall.rotations') }}">{{ __('messages.rotation_schedules') }}</a></li>
+                        <li><a href="{{ route('oncall.rotations.create') }}">{{ __('messages.rotation_new') }}</a></li>
+                    </ul>
+                </li>
+                <li class="navbar-dropdown">
+                    <a href="{{ route('services.index') }}" class="{{ request()->routeIs('services.*') || request()->routeIs('admin.services.*') ? 'active' : '' }}">{{ __('messages.services') }} <span class="caret">&#9662;</span></a>
+                    <ul class="navbar-submenu">
+                        <li><a href="{{ route('services.index') }}">{{ __('messages.services') }}</a></li>
+                        @if(auth()->user()->isAdmin())
+                            <li><a href="{{ route('admin.services.create') }}">{{ __('messages.new_service') }}</a></li>
+                        @endif
+                    </ul>
+                </li>
                 @if(auth()->user()->isAdmin())
                     <li><a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.*') && !request()->routeIs('admin.services.*') ? 'active' : '' }}">{{ __('messages.admin') }}</a></li>
                 @endif

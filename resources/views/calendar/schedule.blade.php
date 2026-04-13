@@ -16,6 +16,7 @@
         <span class="legend-item"><span class="legend-dot legend-completed"></span> {{ __('messages.completed') }}</span>
         <span class="legend-item"><span class="legend-dot legend-report"></span> {{ __('messages.reports') }}</span>
         <span class="legend-item"><span class="legend-dot legend-oncall"></span> {{ __('messages.on_call') }}</span>
+        <span class="legend-item"><span class="legend-dot legend-holiday"></span> {{ __('messages.holiday') }}</span>
     </div>
     <div id="scheduleCalendar"></div>
 </div>
@@ -40,6 +41,10 @@
         <div><strong>{{ __('messages.date') }}:</strong> <span class="tooltip-oncall-date"></span></div>
         <div><strong>{{ __('messages.oncall_duty_users') }}:</strong> <span class="tooltip-oncall-users"></span></div>
         <div><strong>{{ __('messages.person_in_charge') }}:</strong> <span class="tooltip-oncall-pic"></span></div>
+    </div>
+    <div class="tooltip-holiday-meta tooltip-meta" style="display:none;">
+        <div><strong>{{ __('messages.date') }}:</strong> <span class="tooltip-holiday-date"></span></div>
+        <div><strong>{{ __('messages.holiday_reason') }}:</strong> <span class="tooltip-holiday-reason"></span></div>
     </div>
 </div>
 
@@ -97,14 +102,20 @@ document.addEventListener('DOMContentLoaded', function() {
             var taskMeta = tooltip.querySelector('.tooltip-task-meta');
             var reportMeta = tooltip.querySelector('.tooltip-report-meta');
             var oncallMeta = tooltip.querySelector('.tooltip-oncall-meta');
+            var holidayMeta = tooltip.querySelector('.tooltip-holiday-meta');
 
             tooltip.querySelector('.tooltip-title').textContent = info.event.title;
 
             taskMeta.style.display = 'none';
             reportMeta.style.display = 'none';
             oncallMeta.style.display = 'none';
+            holidayMeta.style.display = 'none';
 
-            if (props.type === 'oncall') {
+            if (props.type === 'holiday') {
+                holidayMeta.style.display = 'block';
+                tooltip.querySelector('.tooltip-holiday-date').textContent = props.date;
+                tooltip.querySelector('.tooltip-holiday-reason').textContent = props.reason;
+            } else if (props.type === 'oncall') {
                 oncallMeta.style.display = 'block';
                 tooltip.querySelector('.tooltip-oncall-date').textContent = props.date;
                 tooltip.querySelector('.tooltip-oncall-users').textContent = props.users;

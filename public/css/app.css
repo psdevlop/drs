@@ -20,6 +20,14 @@ a:hover { text-decoration: underline; }
 .navbar-nav a { color: #cbd5e1; font-size: 0.9rem; transition: color 0.2s; }
 .navbar-nav a:hover,
 .navbar-nav a.active { color: #fff; text-decoration: none; }
+.navbar-nav .caret { font-size: 0.65rem; margin-left: 0.2rem; opacity: 0.7; }
+.navbar-dropdown { position: relative; }
+.navbar-submenu { position: absolute; top: 100%; left: 0; min-width: 180px; background: #1e293b; border: 1px solid #334155; border-radius: 4px; padding: 0.25rem 0; margin: 0; list-style: none; box-shadow: 0 4px 12px rgba(0,0,0,0.25); display: none; z-index: 1000; }
+.navbar-dropdown:hover > .navbar-submenu,
+.navbar-dropdown.open > .navbar-submenu { display: block; }
+.navbar-submenu li { width: 100%; }
+.navbar-submenu a { display: block; padding: 0.5rem 1rem; font-size: 0.85rem; color: #cbd5e1; white-space: nowrap; border-bottom: none; }
+.navbar-submenu a:hover { background: #334155; color: #fff; }
 .navbar-right { display: flex; align-items: center; gap: 1rem; }
 .navbar-user { display: flex; align-items: center; gap: 1rem; color: #94a3b8; font-size: 0.875rem; }
 
@@ -209,6 +217,7 @@ select.form-control { appearance: auto; -webkit-appearance: menulist; -moz-appea
 .legend-completed { background: #10b981; }
 .legend-report { background: #8b5cf6; }
 .legend-oncall { background: #ef4444; }
+.legend-holiday { background: #ec4899; }
 
 #calendar, #scheduleCalendar, #reportCalendar { font-size: 0.9rem; }
 .fc .fc-toolbar-title { font-size: 1.25rem; }
@@ -284,6 +293,7 @@ select.form-control { appearance: auto; -webkit-appearance: menulist; -moz-appea
 .filter-bar .form-group { margin-bottom: 0; }
 .pagination-wrapper { margin-top: 1rem; display: flex; justify-content: center; }
 .pagination-wrapper nav > div:first-child { display: none; }
+.pagination-wrapper svg { width: 1rem; height: 1rem; }
 .error-text { color: #dc2626; font-size: 0.8rem; margin-top: 0.25rem; }
 .text-muted { color: #6b7280; }
 .text-muted-light { color: #9ca3af; }
@@ -458,6 +468,9 @@ a.list-item-link:hover { background: #f9fafb; }
     .navbar-nav { flex-direction: column; gap: 0; width: 100%; }
     .navbar-nav li { width: 100%; }
     .navbar-nav a { display: block; padding: 0.75rem 0.5rem; border-bottom: 1px solid #334155; font-size: 1rem; }
+    .navbar-submenu { position: static; display: block; background: #0f172a; border: none; box-shadow: none; padding: 0; border-radius: 0; }
+    .navbar-submenu a { padding: 0.6rem 1.5rem; font-size: 0.9rem; border-bottom: 1px solid #1e293b; }
+    .navbar-nav .caret { display: none; }
 
     .navbar-right { width: 100%; flex-direction: column; align-items: stretch; gap: 0; padding: 0; margin: 0; }
 

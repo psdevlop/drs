@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DailyReport;
 use Carbon\Carbon;
 use App\Models\OnCall;
+use App\Models\Setting;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -162,6 +163,32 @@ class CalendarController extends Controller
                     ],
                 ];
             }
+        }
+
+        // Holidays (specific dates with optional reason)
+        foreach (Setting::getHolidayDates() as $holiday) {
+            if (empty($holiday['date'])) {
+                continue;
+            }
+            if ($request->filled('start') && $request->filled('end')) {
+                if ($holiday['date'] < $request->start || $holiday['date'] > $request->end) {
+                    continue;
+                }
+            }
+            $reason = $holiday['reason'] ?? '';
+            $events[] = [
+                'id' => 'holiday-' . $holiday['date'],
+                'title' => '🎉 ' . __('messages.holiday') . ($reason ? ': ' . $reason : ''),
+                'start' => $holiday['date'],
+                'allDay' => true,
+                'backgroundColor' => '#ec4899',
+                'borderColor' => '#db2777',
+                'extendedProps' => [
+                    'type' => 'holiday',
+                    'date' => Carbon::parse($holiday['date'])->format('M d, Y'),
+                    'reason' => $reason ?: '-',
+                ],
+            ];
         }
 
         return response()->json($events);

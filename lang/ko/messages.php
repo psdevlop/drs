@@ -359,6 +359,7 @@ return [
     'holiday_dates_desc' => '휴일로 처리할 특정 날짜와 사유를 추가하세요.',
     'holiday_reason_placeholder' => '사유 (예: 네팔 새해)',
     'holiday_add_date' => '휴일 날짜 추가',
+    'holiday_reason' => '사유',
     'save_settings' => '설정 저장',
     'settings_updated' => '설정이 성공적으로 업데이트되었습니다.',
     'back' => '뒤로',

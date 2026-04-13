@@ -359,6 +359,7 @@ return [
     'holiday_dates_desc' => 'Add specific dates that should be treated as holidays with an optional reason.',
     'holiday_reason_placeholder' => 'Reason (e.g. Nepali New Year)',
     'holiday_add_date' => 'Add Holiday Date',
+    'holiday_reason' => 'Reason',
     'save_settings' => 'Save Settings',
     'settings_updated' => 'Settings updated successfully.',
     'back' => 'Back',
