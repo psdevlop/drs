@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\OnCall;
 use App\Models\OnCallRotation;
+use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -23,7 +24,9 @@ class OnCallController extends Controller
         $schedule = [];
         for ($i = 0; $i < $days; $i++) {
             $date = $startDate->copy()->addDays($i);
-            $dayData = ['date' => $date, 'users' => [], 'pic' => null, 'is_holiday' => OnCallRotation::isHoliday($date)];
+            $isHoliday = OnCallRotation::isHoliday($date);
+            $holidayReason = $isHoliday ? Setting::getHolidayReason($date->format('Y-m-d')) : null;
+            $dayData = ['date' => $date, 'users' => [], 'pic' => null, 'is_holiday' => $isHoliday, 'holiday_reason' => $holidayReason];
 
             foreach ($activeRotations as $rotation) {
                 $dutyUsers = $rotation->getUsersForDate($date);

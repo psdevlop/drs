@@ -24,4 +24,41 @@ class Setting extends Model
         $value = static::get('holiday_days');
         return $value ? json_decode($value, true) : ['sunday'];
     }
+
+    public static function getHolidayDates(): array
+    {
+        $value = static::get('holiday_dates');
+        if (!$value) {
+            return [];
+        }
+        $decoded = json_decode($value, true);
+        if (!$decoded) {
+            return [];
+        }
+        // Normalize: support both old format ["2026-04-14"] and new format [{"date":"2026-04-14","reason":"..."}]
+        $normalized = [];
+        foreach ($decoded as $entry) {
+            if (is_string($entry)) {
+                $normalized[] = ['date' => $entry, 'reason' => ''];
+            } else {
+                $normalized[] = $entry;
+            }
+        }
+        return $normalized;
+    }
+
+    public static function getHolidayDatesList(): array
+    {
+        return array_column(static::getHolidayDates(), 'date');
+    }
+
+    public static function getHolidayReason(string $date): ?string
+    {
+        foreach (static::getHolidayDates() as $entry) {
+            if ($entry['date'] === $date) {
+                return $entry['reason'] ?: null;
+            }
+        }
+        return null;
+    }
 }

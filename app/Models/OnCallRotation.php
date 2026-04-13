@@ -35,7 +35,11 @@ class OnCallRotation extends Model
     {
         $date = \Carbon\Carbon::parse($date);
         $holidayDays = Setting::getHolidayDays();
-        return in_array(strtolower($date->format('l')), $holidayDays);
+        if (in_array(strtolower($date->format('l')), $holidayDays)) {
+            return true;
+        }
+        $holidayDates = Setting::getHolidayDatesList();
+        return in_array($date->format('Y-m-d'), $holidayDates);
     }
 
     /**

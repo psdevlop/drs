@@ -57,7 +57,7 @@
                                         @endforeach
                                     </div>
                                 @else
-                                    <span class="text-muted text-sm">{{ __('messages.holiday') }}</span>
+                                    <span class="text-muted text-sm">{{ __('messages.holiday') }}{{ !empty($day['holiday_reason']) ? ' - ' . $day['holiday_reason'] : '' }}</span>
                                 @endif
                             </td>
                             <td>
