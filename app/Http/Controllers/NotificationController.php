@@ -39,4 +39,23 @@ class NotificationController extends Controller
 
         return redirect()->back()->with('success', __('messages.all_notifications_read'));
     }
+
+    public function poll(Request $request)
+    {
+        $sinceId = (int) $request->get('since_id', 0);
+
+        $notifications = $request->user()->notifications()
+            ->where('id', '>', $sinceId)
+            ->whereNull('read_at')
+            ->orderBy('id')
+            ->limit(20)
+            ->get(['id', 'title', 'message', 'link']);
+
+        $unreadCount = $request->user()->unreadNotificationsCount();
+
+        return response()->json([
+            'notifications' => $notifications,
+            'unread_count' => $unreadCount,
+        ]);
+    }
 }

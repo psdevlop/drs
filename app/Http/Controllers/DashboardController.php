@@ -14,12 +14,17 @@ class DashboardController extends Controller
     {
         $user = $request->user();
         $userId = $user->id;
+        $isAdmin = $user->isAdmin();
 
-        $userTasksQuery = function () use ($userId) {
-            return Task::where(function ($q) use ($userId) {
-                $q->where('user_id', $userId)
-                  ->orWhereHas('assignees', fn ($q2) => $q2->where('users.id', $userId));
-            });
+        $userTasksQuery = function () use ($userId, $isAdmin) {
+            $query = Task::query();
+            if (!$isAdmin) {
+                $query->where(function ($q) use ($userId) {
+                    $q->where('user_id', $userId)
+                      ->orWhereHas('assignees', fn ($q2) => $q2->where('users.id', $userId));
+                });
+            }
+            return $query;
         };
 
         $taskStats = [
@@ -30,14 +35,14 @@ class DashboardController extends Controller
             'completed' => $userTasksQuery()->where('status', 'completed')->count(),
         ];
 
-        $recentTasks = Task::with(['assignees', 'user'])
-            ->where(function ($q) use ($userId) {
+        $recentTasksQuery = Task::with(['assignees', 'user']);
+        if (!$isAdmin) {
+            $recentTasksQuery->where(function ($q) use ($userId) {
                 $q->where('user_id', $userId)
                   ->orWhereHas('assignees', fn ($q2) => $q2->where('users.id', $userId));
-            })
-            ->latest()
-            ->take(5)
-            ->get();
+            });
+        }
+        $recentTasks = $recentTasksQuery->latest()->take(5)->get();
 
         if ($user->isAdmin()) {
             $recentReports = DailyReport::with(['task', 'user'])->latest('report_date')->take(5)->get();

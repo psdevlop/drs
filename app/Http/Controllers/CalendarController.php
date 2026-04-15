@@ -30,15 +30,17 @@ class CalendarController extends Controller
 
         // Tasks
         $taskQuery = Task::with(['assignees', 'user'])
-            ->where(function ($q) use ($userId) {
-                $q->where('user_id', $userId)
-                  ->orWhereHas('assignees', fn ($q2) => $q2->where('users.id', $userId));
-            })
             ->where(function ($q) {
                 $q->whereNotNull('start_date')
                   ->orWhereNotNull('due_date')
                   ->orWhereNotNull('expected_end_date');
             });
+        if (!$user->isAdmin()) {
+            $taskQuery->where(function ($q) use ($userId) {
+                $q->where('user_id', $userId)
+                  ->orWhereHas('assignees', fn ($q2) => $q2->where('users.id', $userId));
+            });
+        }
 
         if ($request->filled('start') && $request->filled('end')) {
             $start = $request->start;
@@ -196,18 +198,21 @@ class CalendarController extends Controller
 
     public function tasks(Request $request)
     {
-        $userId = auth()->id();
+        $user = auth()->user();
+        $userId = $user->id;
 
         $query = Task::with(['assignees', 'user'])
-            ->where(function ($q) use ($userId) {
-                $q->where('user_id', $userId)
-                  ->orWhereHas('assignees', fn ($q2) => $q2->where('users.id', $userId));
-            })
             ->where(function ($q) {
                 $q->whereNotNull('start_date')
                   ->orWhereNotNull('due_date')
                   ->orWhereNotNull('expected_end_date');
             });
+        if (!$user->isAdmin()) {
+            $query->where(function ($q) use ($userId) {
+                $q->where('user_id', $userId)
+                  ->orWhereHas('assignees', fn ($q2) => $q2->where('users.id', $userId));
+            });
+        }
 
         if ($request->filled('start') && $request->filled('end')) {
             $start = $request->start;

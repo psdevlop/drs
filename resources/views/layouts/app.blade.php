@@ -129,6 +129,91 @@
             var dd = document.getElementById('userDropdown');
             if (dd && !dd.contains(e.target)) dd.classList.remove('open');
         });
+
+        (function() {
+            if (!('Notification' in window)) return;
+
+            var POLL_URL = '{{ route("notifications.poll") }}';
+            var NOTIF_INDEX_URL = '{{ route("notifications.index") }}';
+            var STORAGE_KEY = 'drs_last_notif_id_{{ auth()->id() }}';
+            var POLL_INTERVAL = 30000;
+
+            function requestPermissionOnce() {
+                if (Notification.permission === 'default') {
+                    var ask = function() {
+                        Notification.requestPermission();
+                        document.removeEventListener('click', ask);
+                    };
+                    document.addEventListener('click', ask);
+                }
+            }
+
+            function updateBadge(count) {
+                var bell = document.querySelector('.notification-bell');
+                if (!bell) return;
+                var badge = bell.querySelector('.notification-badge');
+                if (count > 0) {
+                    var display = count > 99 ? '99+' : count;
+                    if (badge) {
+                        badge.textContent = display;
+                    } else {
+                        var newBadge = document.createElement('span');
+                        newBadge.className = 'notification-badge';
+                        newBadge.textContent = display;
+                        bell.querySelector('.notification-icon').appendChild(newBadge);
+                    }
+                } else if (badge) {
+                    badge.remove();
+                }
+            }
+
+            function showBrowserNotification(n) {
+                if (Notification.permission !== 'granted') return;
+                var notif = new Notification(n.title || 'Notification', {
+                    body: n.message || '',
+                    tag: 'drs-notif-' + n.id,
+                });
+                notif.onclick = function() {
+                    window.focus();
+                    window.location.href = n.link || NOTIF_INDEX_URL;
+                    notif.close();
+                };
+                setTimeout(function() { notif.close(); }, 8000);
+            }
+
+            function poll() {
+                var sinceId = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
+                fetch(POLL_URL + '?since_id=' + sinceId, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+                    .then(function(r) { return r.ok ? r.json() : null; })
+                    .then(function(data) {
+                        if (!data) return;
+                        updateBadge(data.unread_count || 0);
+                        var list = data.notifications || [];
+                        if (list.length === 0) return;
+                        var maxId = sinceId;
+                        list.forEach(function(n) {
+                            if (sinceId > 0) showBrowserNotification(n);
+                            if (n.id > maxId) maxId = n.id;
+                        });
+                        localStorage.setItem(STORAGE_KEY, String(maxId));
+                    })
+                    .catch(function() {});
+            }
+
+            requestPermissionOnce();
+            // Seed last-seen id on very first visit so user doesn't get flooded with old notifications
+            if (localStorage.getItem(STORAGE_KEY) === null) {
+                fetch(POLL_URL + '?since_id=0', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+                    .then(function(r) { return r.ok ? r.json() : null; })
+                    .then(function(data) {
+                        if (!data || !data.notifications) return;
+                        var maxId = 0;
+                        data.notifications.forEach(function(n) { if (n.id > maxId) maxId = n.id; });
+                        localStorage.setItem(STORAGE_KEY, String(maxId));
+                    });
+            }
+            setInterval(poll, POLL_INTERVAL);
+        })();
     </script>
     @endauth
     @hasSection('ckeditor')
