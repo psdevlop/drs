@@ -67,7 +67,7 @@ class OnCallController extends Controller
 
     public function create()
     {
-        $users = User::orderBy('name')->get();
+        $users = User::where('role', '!=', 'super_admin')->orderBy('name')->get();
         return view('oncall.create', compact('users'));
     }
 
@@ -123,7 +123,7 @@ class OnCallController extends Controller
         }
 
         $oncall->load('users');
-        $users = User::orderBy('name')->get();
+        $users = User::where('role', '!=', 'super_admin')->orderBy('name')->get();
         $selectedUsers = $oncall->users->pluck('id')->toArray();
 
         return view('oncall.edit', compact('oncall', 'users', 'selectedUsers'));
@@ -223,7 +223,7 @@ class OnCallController extends Controller
 
     public function createRotation()
     {
-        $users = User::orderBy('name')->get();
+        $users = User::where('role', '!=', 'super_admin')->orderBy('name')->get();
         return view('oncall.rotations.create', compact('users'));
     }
 
@@ -277,7 +277,7 @@ class OnCallController extends Controller
     public function editRotation(OnCallRotation $rotation)
     {
         $rotation->load('users');
-        $users = User::orderBy('name')->get();
+        $users = User::where('role', '!=', 'super_admin')->orderBy('name')->get();
         return view('oncall.rotations.edit', compact('rotation', 'users'));
     }
 
@@ -432,7 +432,7 @@ class OnCallController extends Controller
             $preview[] = $dayData;
         }
 
-        $users = User::orderBy('name')->get();
+        $users = User::where('role', '!=', 'super_admin')->orderBy('name')->get();
 
         return view('oncall.rotations.preview', compact('preview', 'rotations', 'startDate', 'days', 'users'));
     }
