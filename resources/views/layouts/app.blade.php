@@ -167,7 +167,31 @@
                 }
             }
 
+            var audioCtx = null;
+            function playNotificationSound() {
+                try {
+                    var AC = window.AudioContext || window.webkitAudioContext;
+                    if (!AC) return;
+                    if (!audioCtx) audioCtx = new AC();
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                    var now = audioCtx.currentTime;
+                    [880, 1320].forEach(function(freq, i) {
+                        var osc = audioCtx.createOscillator();
+                        var gain = audioCtx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.value = freq;
+                        gain.gain.setValueAtTime(0, now + i * 0.15);
+                        gain.gain.linearRampToValueAtTime(0.15, now + i * 0.15 + 0.02);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 0.18);
+                        osc.connect(gain).connect(audioCtx.destination);
+                        osc.start(now + i * 0.15);
+                        osc.stop(now + i * 0.15 + 0.2);
+                    });
+                } catch (e) {}
+            }
+
             function showBrowserNotification(n) {
+                playNotificationSound();
                 if (Notification.permission !== 'granted') return;
                 var notif = new Notification(n.title || 'Notification', {
                     body: n.message || '',
