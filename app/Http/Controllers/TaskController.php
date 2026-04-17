@@ -260,6 +260,8 @@ class TaskController extends Controller
 
         $comment = $task->comments()->create($commentData);
 
+        $notifiedIds = [auth()->id()];
+
         // Notify task owner
         if ($task->user_id !== auth()->id()) {
             Notification::create([
@@ -269,11 +271,12 @@ class TaskController extends Controller
                 'message' => __('messages.notif_task_comment_message', ['task' => $task->title, 'user' => auth()->user()->name]),
                 'link' => route('tasks.show', $task),
             ]);
+            $notifiedIds[] = $task->user_id;
         }
 
         // Notify assigned users
         foreach ($task->assignees as $assignee) {
-            if ($assignee->id !== auth()->id() && $assignee->id !== $task->user_id) {
+            if (!in_array($assignee->id, $notifiedIds)) {
                 Notification::create([
                     'user_id' => $assignee->id,
                     'type' => 'task_comment',
@@ -281,7 +284,20 @@ class TaskController extends Controller
                     'message' => __('messages.notif_task_comment_message', ['task' => $task->title, 'user' => auth()->user()->name]),
                     'link' => route('tasks.show', $task),
                 ]);
+                $notifiedIds[] = $assignee->id;
             }
+        }
+
+        // Notify admins (excluding already-notified users)
+        $admins = User::whereIn('role', ['admin', 'super_admin'])->whereNotIn('id', $notifiedIds)->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id' => $admin->id,
+                'type' => 'task_comment',
+                'title' => __('messages.notif_task_comment_title'),
+                'message' => __('messages.notif_task_comment_message', ['task' => $task->title, 'user' => auth()->user()->name]),
+                'link' => route('tasks.show', $task),
+            ]);
         }
 
         return redirect()->route('tasks.show', $task)->with('success', __('messages.comment_added'));
