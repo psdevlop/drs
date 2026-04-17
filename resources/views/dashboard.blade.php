@@ -28,7 +28,7 @@
                 <span>{{ __('messages.checked_in_at') }} <strong>{{ $todayAttendance->check_in->format('h:i A') }}</strong></span>
             @else
                 <span class="attendance-status-dot status-completed"></span>
-                <span>{{ __('messages.todays_attendance_complete') }} &mdash; {{ $todayAttendance->check_in->format('h:i A') }} ~ {{ $todayAttendance->check_out->format('h:i A') }} <strong>({{ $todayAttendance->total_hours }}h)</strong></span>
+                <span>{{ __('messages.todays_attendance_complete') }} &mdash; {{ $todayAttendance->check_in->format('h:i A') }} ~ {{ $todayAttendance->check_out->format('h:i A') }} <strong>({{ $todayAttendance->formattedHours() }})</strong></span>
             @endif
         </div>
         <div class="attendance-widget-actions">

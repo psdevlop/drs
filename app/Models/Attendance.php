@@ -37,4 +37,19 @@ class Attendance extends Model
         }
         return null;
     }
+
+    public function formattedHours(): string
+    {
+        if ($this->total_hours === null) {
+            return '-';
+        }
+        return self::formatDecimalHours($this->total_hours);
+    }
+
+    public static function formatDecimalHours($hours): string
+    {
+        $h = (int) $hours;
+        $m = (int) round(($hours - $h) * 60);
+        return $h . 'h ' . $m . 'm';
+    }
 }

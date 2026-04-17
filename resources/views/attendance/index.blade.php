@@ -52,7 +52,7 @@
                 <span>
                     {{ __('messages.todays_attendance_complete') }}
                     &mdash; {{ $todayAttendance->check_in->format('h:i A') }} ~ {{ $todayAttendance->check_out->format('h:i A') }}
-                    <strong>({{ $todayAttendance->total_hours }}h)</strong>
+                    <strong>({{ $todayAttendance->formattedHours() }})</strong>
                 </span>
             </div>
         @endif
@@ -66,11 +66,11 @@
         <div class="stat-label">{{ __('messages.days_worked') }}</div>
     </div>
     <div class="stat-card green">
-        <div class="stat-value">{{ $monthlySummary['total_hours'] }}h</div>
+        <div class="stat-value">{{ \App\Models\Attendance::formatDecimalHours($monthlySummary['total_hours']) }}</div>
         <div class="stat-label">{{ __('messages.total_hours_worked') }}</div>
     </div>
     <div class="stat-card yellow">
-        <div class="stat-value">{{ $monthlySummary['avg_hours'] }}h</div>
+        <div class="stat-value">{{ \App\Models\Attendance::formatDecimalHours($monthlySummary['avg_hours']) }}</div>
         <div class="stat-label">{{ __('messages.avg_hours_per_day') }}</div>
     </div>
 </div>
@@ -127,7 +127,7 @@
                             @endif
                             <td>{{ $att->check_in?->format('h:i A') ?? '-' }}</td>
                             <td>{{ $att->check_out?->format('h:i A') ?? '-' }}</td>
-                            <td>{{ $att->total_hours ? $att->total_hours . 'h' : '-' }}</td>
+                            <td>{{ $att->formattedHours() }}</td>
                             <td>
                                 @if($att->isCompleted())
                                     <span class="badge badge-completed">{{ __('messages.completed') }}</span>
