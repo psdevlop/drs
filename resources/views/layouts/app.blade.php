@@ -130,6 +130,21 @@
             if (dd && !dd.contains(e.target)) dd.classList.remove('open');
         });
 
+        document.querySelectorAll('.navbar-dropdown > a').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                if (window.innerWidth < 768) {
+                    var parent = link.parentElement;
+                    if (!parent.classList.contains('open')) {
+                        e.preventDefault();
+                        document.querySelectorAll('.navbar-dropdown.open').forEach(function(d) {
+                            if (d !== parent) d.classList.remove('open');
+                        });
+                        parent.classList.add('open');
+                    }
+                }
+            });
+        });
+
         (function() {
             if (!('Notification' in window)) return;
 
