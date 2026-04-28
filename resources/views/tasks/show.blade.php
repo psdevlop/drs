@@ -181,7 +181,7 @@
                                 <span class="comment-time">{{ $comment->created_at->diffForHumans() }}</span>
                             </div>
                         </div>
-                        @if($comment->user_id === auth()->id() || auth()->user()->isAdmin())
+                        @if($comment->user_id === auth()->id())
                             <form action="{{ route('tasks.comments.destroy', [$task, $comment]) }}" method="POST" onsubmit="return confirm('{{ __('messages.delete_comment_confirm') }}')">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-danger">{{ __('messages.delete') }}</button>

@@ -307,7 +307,7 @@ class TaskController extends Controller
     {
         $this->authorizeTask($task);
 
-        if ($comment->user_id !== auth()->id() && !auth()->user()->isAdmin()) {
+        if ($comment->user_id !== auth()->id()) {
             abort(403);
         }
 
