@@ -188,7 +188,7 @@
                             </form>
                         @endif
                     </div>
-                    <div class="comment-body">{!! nl2br(e($comment->body)) !!}</div>
+                    <div class="comment-body">{!! nl2br(preg_replace('~(https?://[^\s<]+)~i', '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>', e($comment->body))) !!}</div>
                     @if($comment->attachment_path)
                         <div class="comment-attachment">
                             @if(in_array(pathinfo($comment->attachment_name, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif', 'webp']))
