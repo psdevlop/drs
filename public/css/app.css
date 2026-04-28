@@ -190,7 +190,9 @@ select.form-control { appearance: auto; -webkit-appearance: menulist; -moz-appea
 .detail-row, .detail-item { display: flex; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #f3f4f6; }
 .detail-row:last-child, .detail-item:last-child { border-bottom: none; }
 .detail-label { min-width: 180px; font-weight: 600; color: #374151; }
-.detail-value { flex: 1; color: #4b5563; }
+.detail-value { flex: 1; min-width: 0; color: #4b5563; word-wrap: break-word; overflow-wrap: anywhere; }
+.detail-value a { word-break: break-all; }
+.detail-value img, .detail-value .ck-content img { max-width: 100%; height: auto; }
 .detail-section { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; }
 .detail-content { margin-top: 0.5rem; color: #4b5563; white-space: pre-wrap; }
 .password-field { display: flex; align-items: center; gap: 0.5rem; }
@@ -457,6 +459,10 @@ a.list-item-link:hover { background: #f9fafb; }
    Responsive - Tablet & Mobile
    ========================================================================== */
 @media (max-width: 768px) {
+    .detail-row, .detail-item { flex-direction: column; gap: 0.25rem; }
+    .detail-label { min-width: 0; font-size: 0.85rem; color: #6b7280; }
+    .detail-value { width: 100%; }
+
     .navbar { flex-direction: column; align-items: stretch; height: auto; padding: 0 1rem; }
     .navbar-top { height: 56px; justify-content: space-between; }
     .navbar-toggler { display: block; }
