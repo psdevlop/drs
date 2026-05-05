@@ -431,6 +431,7 @@ a.list-item-link:hover { background: #f9fafb; }
 .announcement-meta { display: flex; gap: 0.75rem; font-size: 0.8rem; color: #6b7280; align-items: center; }
 .announcement-date { white-space: nowrap; }
 .announcement-excerpt { color: #4b5563; line-height: 1.6; margin-bottom: 0.75rem; }
+.announcement-excerpt a, .announcement-show-content a { word-break: break-all; }
 .announcement-footer { display: flex; justify-content: space-between; align-items: center; }
 .announcement-pin-icon { font-size: 0.9rem; margin-right: 0.25rem; }
 .announcement-pin-icon-sm { font-size: 0.75rem; margin-right: 0.15rem; }

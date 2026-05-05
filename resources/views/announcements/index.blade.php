@@ -44,7 +44,7 @@
                     <span class="announcement-date">{{ $announcement->created_at->format('M d, Y H:i') }}</span>
                 </div>
             </div>
-            <div class="announcement-excerpt">{{ Str::limit($announcement->content, 200) }}</div>
+            <div class="announcement-excerpt">{!! \App\Support\TextFormatter::linkifyUrls(Str::limit($announcement->content, 200), true) !!}</div>
             <div class="announcement-footer">
                 <a href="{{ route('announcements.show', $announcement) }}" class="btn btn-sm btn-outline">{{ __('messages.read_more') }}</a>
                 @if(auth()->user()->isAdmin())

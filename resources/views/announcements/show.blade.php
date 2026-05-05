@@ -25,7 +25,7 @@
             <span>({{ __('messages.edited') }})</span>
         @endif
     </div>
-    <div class="announcement-show-content">{!! nl2br(e($announcement->content)) !!}</div>
+    <div class="announcement-show-content">{!! nl2br(\App\Support\TextFormatter::linkifyUrls($announcement->content)) !!}</div>
 
     @if(auth()->user()->isAdmin())
         <div class="announcement-show-actions">
