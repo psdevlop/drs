@@ -102,7 +102,7 @@ class TaskController extends Controller
     public function show(Task $task)
     {
         $this->authorizeTask($task);
-        $task->load(['user', 'assignees', 'requester', 'attachments', 'comments.user']);
+        $task->load(['user', 'assignees', 'requester', 'attachments', 'comments.user', 'comments.attachments']);
         return view('tasks.show', compact('task'));
     }
 
@@ -244,21 +244,23 @@ class TaskController extends Controller
 
         $validated = $request->validate([
             'body' => ['required', 'string', 'max:5000'],
-            'attachment' => ['nullable', 'file', 'max:5120'],
+            'attachments' => ['nullable', 'array'],
+            'attachments.*' => ['file', 'max:10240'],
         ]);
 
-        $commentData = [
+        $comment = $task->comments()->create([
             'user_id' => auth()->id(),
             'body' => $validated['body'],
-        ];
+        ]);
 
-        if ($request->hasFile('attachment')) {
-            $file = $request->file('attachment');
-            $commentData['attachment_path'] = $file->store('comment-attachments', 'public');
-            $commentData['attachment_name'] = $file->getClientOriginalName();
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $comment->attachments()->create([
+                    'file_path' => $file->store('comment-attachments', 'public'),
+                    'original_name' => $file->getClientOriginalName(),
+                ]);
+            }
         }
-
-        $comment = $task->comments()->create($commentData);
 
         $notifiedIds = [auth()->id()];
 
@@ -311,8 +313,8 @@ class TaskController extends Controller
             abort(403);
         }
 
-        if ($comment->attachment_path) {
-            Storage::disk('public')->delete($comment->attachment_path);
+        foreach ($comment->attachments as $attachment) {
+            Storage::disk('public')->delete($attachment->file_path);
         }
 
         $comment->delete();

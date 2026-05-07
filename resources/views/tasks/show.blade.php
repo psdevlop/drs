@@ -155,14 +155,15 @@
         </div>
         <div class="comment-form-actions">
             <label class="btn btn-sm btn-outline comment-attach-btn">
-                <span class="attachment-icon">&#128206;</span> {{ __('messages.attach_file') }}
-                <input type="file" name="attachment" class="hidden-input" onchange="document.getElementById('attachment-name').textContent = this.files[0]?.name || ''">
+                <span class="attachment-icon">&#128206;</span> {{ __('messages.attach_files') }}
+                <input type="file" name="attachments[]" class="hidden-input" multiple onchange="document.getElementById('attachment-name').textContent = Array.from(this.files).map(f => f.name).join(', ')">
             </label>
             <span id="attachment-name" class="comment-attach-name"></span>
             <button type="submit" class="btn btn-primary btn-sm">{{ __('messages.post_comment') }}</button>
         </div>
-        <div class="form-hint">{{ __('messages.max_file_size', ['size' => '5MB']) }}</div>
-        @error('attachment') <div class="error-text">{{ $message }}</div> @enderror
+        <div class="form-hint">{{ __('messages.attach_files_hint') }}</div>
+        @error('attachments') <div class="error-text">{{ $message }}</div> @enderror
+        @error('attachments.*') <div class="error-text">{{ $message }}</div> @enderror
     </form>
 
     @if($task->comments->count())
@@ -189,17 +190,21 @@
                         @endif
                     </div>
                     <div class="comment-body">{!! nl2br(preg_replace('~(https?://[^\s<]+)~i', '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>', e($comment->body))) !!}</div>
-                    @if($comment->attachment_path)
-                        <div class="comment-attachment">
-                            @if(in_array(pathinfo($comment->attachment_name, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif', 'webp']))
-                                <a href="{{ asset('storage/' . $comment->attachment_path) }}" target="_blank">
-                                    <img src="{{ asset('storage/' . $comment->attachment_path) }}" alt="{{ $comment->attachment_name }}" class="comment-attachment-image">
-                                </a>
-                            @else
-                                <a href="{{ asset('storage/' . $comment->attachment_path) }}" target="_blank" class="comment-attachment-file">
-                                    <span class="attachment-icon">&#128196;</span> {{ $comment->attachment_name }}
-                                </a>
-                            @endif
+                    @if($comment->attachments->count())
+                        <div class="comment-attachments">
+                            @foreach($comment->attachments as $attachment)
+                                <div class="comment-attachment">
+                                    @if(in_array(strtolower(pathinfo($attachment->original_name, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif', 'webp']))
+                                        <a href="{{ asset('storage/' . $attachment->file_path) }}" target="_blank">
+                                            <img src="{{ asset('storage/' . $attachment->file_path) }}" alt="{{ $attachment->original_name }}" class="comment-attachment-image">
+                                        </a>
+                                    @else
+                                        <a href="{{ asset('storage/' . $attachment->file_path) }}" target="_blank" class="comment-attachment-file">
+                                            <span class="attachment-icon">&#128196;</span> {{ $attachment->original_name }}
+                                        </a>
+                                    @endif
+                                </div>
+                            @endforeach
                         </div>
                     @endif
                 </div>
