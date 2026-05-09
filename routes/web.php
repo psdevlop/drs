@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\DailyReportController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnCallController;
@@ -106,6 +107,27 @@ Route::middleware('auth')->group(function () {
     Route::delete('oncall/rotations/{rotation}', [OnCallController::class, 'destroyRotation'])->name('oncall.rotations.destroy');
     Route::post('oncall/rotations/generate', [OnCallController::class, 'generateFromRotations'])->name('oncall.rotations.generate');
 
+    // Evaluations
+    Route::get('/evaluations', [EvaluationController::class, 'index'])->name('evaluations.index');
+    Route::get('/evaluations/{type}/{user}/create', [EvaluationController::class, 'create'])
+        ->whereIn('type', ['self', 'peer', 'manager'])
+        ->name('evaluations.create');
+    Route::post('/evaluations/{type}/{user}', [EvaluationController::class, 'store'])
+        ->whereIn('type', ['self', 'peer', 'manager'])
+        ->name('evaluations.store');
+    Route::get('/evaluations/{evaluation}', [EvaluationController::class, 'show'])
+        ->whereNumber('evaluation')
+        ->name('evaluations.show');
+    Route::get('/evaluations/{evaluation}/edit', [EvaluationController::class, 'edit'])
+        ->whereNumber('evaluation')
+        ->name('evaluations.edit');
+    Route::put('/evaluations/{evaluation}', [EvaluationController::class, 'update'])
+        ->whereNumber('evaluation')
+        ->name('evaluations.update');
+    Route::delete('/evaluations/{evaluation}', [EvaluationController::class, 'destroy'])
+        ->whereNumber('evaluation')
+        ->name('evaluations.destroy');
+
     // Services (view only for all users)
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
     Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
@@ -130,5 +152,8 @@ Route::middleware('auth')->group(function () {
 
         // Services Management (Admin only)
         Route::resource('services', ServiceController::class);
+
+        // Evaluations overview
+        Route::get('/evaluations', [EvaluationController::class, 'adminIndex'])->name('evaluations.index');
     });
 });

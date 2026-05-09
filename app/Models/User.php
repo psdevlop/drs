@@ -24,10 +24,32 @@ class User extends Authenticatable
         'avatar',
         'password',
         'role',
+        'intern_role',
         'last_seen_at',
         'typing_to',
         'typing_at',
     ];
+
+    public const INTERN_ROLES = [
+        'senior_programmer' => 'Senior Programmer',
+        'mid_programmer' => 'Mid-level Programmer',
+        'translator' => 'Translator',
+    ];
+
+    public function internRoleLabel(): ?string
+    {
+        return self::INTERN_ROLES[$this->intern_role] ?? null;
+    }
+
+    public function evaluationsGiven()
+    {
+        return $this->hasMany(Evaluation::class, 'evaluator_id');
+    }
+
+    public function evaluationsReceived()
+    {
+        return $this->hasMany(Evaluation::class, 'evaluee_id');
+    }
 
     public function tasks()
     {

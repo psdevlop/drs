@@ -28,7 +28,12 @@
                         <tr>
                             <td class="text-bold">{{ $user->name }}</td>
                             <td>{{ $user->email }}</td>
-                            <td><span class="badge badge-{{ $user->role }}">{{ __('messages.role_' . $user->role) }}</span></td>
+                            <td>
+                                <span class="badge badge-{{ $user->role }}">{{ __('messages.role_' . $user->role) }}</span>
+                                @if($user->intern_role)
+                                    <span class="badge" style="background:#e0f2fe;color:#0369a1;">{{ $user->internRoleLabel() }}</span>
+                                @endif
+                            </td>
                             <td>{{ $user->tasks_count }}</td>
                             <td>{{ $user->daily_reports_count }}</td>
                             <td>

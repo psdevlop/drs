@@ -43,6 +43,7 @@
                     </ul>
                 </li>
                 <li><a href="{{ route('attendance.index') }}" class="{{ request()->routeIs('attendance.*') ? 'active' : '' }}">{{ __('messages.attendance') }}</a></li>
+                <li><a href="{{ route('evaluations.index') }}" class="{{ request()->routeIs('evaluations.*') ? 'active' : '' }}">Evaluations</a></li>
                 <li class="navbar-dropdown">
                     <a href="{{ route('oncall.index') }}" class="{{ request()->routeIs('oncall.*') || request()->routeIs('oncall.rotations*') ? 'active' : '' }}">{{ __('messages.on_call') }} <span class="caret">&#9662;</span></a>
                     <ul class="navbar-submenu">

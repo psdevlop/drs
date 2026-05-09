@@ -56,9 +56,11 @@ class AdminController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:6', 'confirmed'],
             'role' => ['required', 'in:' . $allowedRoles],
+            'intern_role' => ['nullable', 'in:' . implode(',', array_keys(User::INTERN_ROLES))],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
+        $validated['intern_role'] = $validated['intern_role'] ?? null;
 
         $user = User::create($validated);
 
@@ -79,11 +81,13 @@ class AdminController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'role' => ['required', 'in:' . $allowedRoles],
             'password' => ['nullable', 'string', 'min:6', 'confirmed'],
+            'intern_role' => ['nullable', 'in:' . implode(',', array_keys(User::INTERN_ROLES))],
         ]);
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->role = $validated['role'];
+        $user->intern_role = $validated['intern_role'] ?? null;
 
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
