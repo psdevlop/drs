@@ -30,6 +30,9 @@
                             <td>{{ $user->email }}</td>
                             <td>
                                 <span class="badge badge-{{ $user->role }}">{{ __('messages.role_' . $user->role) }}</span>
+                                @if($user->team_role)
+                                    <span class="badge" style="background:#fef3c7;color:#92400e;">{{ $user->teamRoleLabel() }}</span>
+                                @endif
                                 @if($user->intern_role)
                                     <span class="badge" style="background:#e0f2fe;color:#0369a1;">{{ $user->internRoleLabel() }}</span>
                                 @endif

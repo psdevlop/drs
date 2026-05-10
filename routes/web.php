@@ -127,6 +127,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/evaluations/{evaluation}', [EvaluationController::class, 'destroy'])
         ->whereNumber('evaluation')
         ->name('evaluations.destroy');
+    Route::post('/evaluations/{evaluation}/confirm', [EvaluationController::class, 'confirm'])
+        ->whereNumber('evaluation')
+        ->name('evaluations.confirm');
 
     // Services (view only for all users)
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');

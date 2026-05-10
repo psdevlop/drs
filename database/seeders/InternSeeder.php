@@ -10,20 +10,21 @@ class InternSeeder extends Seeder
 {
     public function run(): void
     {
-        $interns = [
-            ['name' => 'PS',   'email' => 'ps@drs.com',   'intern_role' => 'senior_programmer'],
-            ['name' => 'RK',   'email' => 'rk@drs.com',   'intern_role' => 'mid_programmer'],
-            ['name' => 'Rose', 'email' => 'rose@drs.com', 'intern_role' => 'translator'],
+        $cohort = [
+            ['name' => 'PS',   'email' => 'ps@drs.com',   'team_role' => 'team_manager', 'intern_role' => 'senior_programmer'],
+            ['name' => 'RK',   'email' => 'rk@drs.com',   'team_role' => 'team_member',  'intern_role' => 'mid_programmer'],
+            ['name' => 'Rose', 'email' => 'rose@drs.com', 'team_role' => 'team_member',  'intern_role' => 'translator'],
         ];
 
-        foreach ($interns as $intern) {
+        foreach ($cohort as $person) {
             User::updateOrCreate(
-                ['email' => $intern['email']],
+                ['email' => $person['email']],
                 [
-                    'name' => $intern['name'],
+                    'name' => $person['name'],
                     'password' => Hash::make('password'),
                     'role' => 'user',
-                    'intern_role' => $intern['intern_role'],
+                    'team_role' => $person['team_role'],
+                    'intern_role' => $person['intern_role'],
                 ],
             );
         }

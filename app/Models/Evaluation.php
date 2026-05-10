@@ -19,6 +19,8 @@ class Evaluation extends Model
         'rehire_recommendation',
         'salary_increase',
         'submitted_at',
+        'confirmed_at',
+        'confirmed_by_id',
     ];
 
     protected function casts(): array
@@ -27,7 +29,18 @@ class Evaluation extends Model
             'ratings' => 'array',
             'responses' => 'array',
             'submitted_at' => 'datetime',
+            'confirmed_at' => 'datetime',
         ];
+    }
+
+    public function confirmedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'confirmed_by_id');
+    }
+
+    public function isConfirmed(): bool
+    {
+        return $this->confirmed_at !== null;
     }
 
     public function evaluator(): BelongsTo

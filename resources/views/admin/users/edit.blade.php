@@ -31,9 +31,19 @@
             @error('role') <div class="error-text">{{ $message }}</div> @enderror
         </div>
         <div class="form-group">
-            <label for="intern_role">Intern Role <small class="text-muted">(optional — adds user to evaluation cohort)</small></label>
+            <label for="team_role">Team Role <small class="text-muted">(adds user to evaluation cohort)</small></label>
+            <select id="team_role" name="team_role" class="form-control">
+                <option value="">— Not in cohort —</option>
+                @foreach(\App\Models\User::TEAM_ROLES as $val => $label)
+                    <option value="{{ $val }}" {{ old('team_role', $user->team_role) == $val ? 'selected' : '' }}>{{ $label }}</option>
+                @endforeach
+            </select>
+            @error('team_role') <div class="error-text">{{ $message }}</div> @enderror
+        </div>
+        <div class="form-group">
+            <label for="intern_role">Position <small class="text-muted">(used to choose role-specific manager rating items)</small></label>
             <select id="intern_role" name="intern_role" class="form-control">
-                <option value="">— Not an intern —</option>
+                <option value="">— None —</option>
                 @foreach(\App\Models\User::INTERN_ROLES as $val => $label)
                     <option value="{{ $val }}" {{ old('intern_role', $user->intern_role) == $val ? 'selected' : '' }}>{{ $label }}</option>
                 @endforeach

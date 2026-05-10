@@ -12,8 +12,14 @@
     <h1>{{ $typeLabel }} — {{ $evaluation->evaluee->name }}</h1>
     <div class="actions">
         <a href="{{ url()->previous() }}" class="btn btn-outline">Back</a>
-        @if($evaluation->evaluator_id === auth()->id())
+        @if($evaluation->evaluator_id === auth()->id() || auth()->user()->isSuperAdmin())
             <a href="{{ route('evaluations.edit', $evaluation) }}" class="btn btn-primary">Edit</a>
+        @endif
+        @if(auth()->user()->isAdmin() && !$evaluation->isConfirmed())
+            <form method="POST" action="{{ route('evaluations.confirm', $evaluation) }}" style="display:inline">
+                @csrf
+                <button type="submit" class="btn btn-success">Confirm</button>
+            </form>
         @endif
         @if($evaluation->evaluator_id === auth()->id() || auth()->user()->isAdmin())
             <form method="POST" action="{{ route('evaluations.destroy', $evaluation) }}" style="display:inline" onsubmit="return confirm('Delete this evaluation? This cannot be undone.');">
@@ -23,6 +29,12 @@
         @endif
     </div>
 </div>
+
+@if($evaluation->isConfirmed())
+    <div class="alert alert-info" style="background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe;padding:10px 14px;border-radius:8px;margin-bottom:14px;">
+        ✓ Confirmed by <strong>{{ $evaluation->confirmedBy->name ?? 'Admin' }}</strong> on {{ $evaluation->confirmed_at->format('Y-m-d H:i') }}
+    </div>
+@endif
 
 <div class="card">
     <div class="table-wrapper">

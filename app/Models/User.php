@@ -25,6 +25,7 @@ class User extends Authenticatable
         'password',
         'role',
         'intern_role',
+        'team_role',
         'last_seen_at',
         'typing_to',
         'typing_at',
@@ -36,9 +37,35 @@ class User extends Authenticatable
         'translator' => 'Translator',
     ];
 
+    public const TEAM_ROLES = [
+        'director' => 'Director',
+        'team_manager' => 'Team Manager',
+        'team_member' => 'Team Member',
+    ];
+
     public function internRoleLabel(): ?string
     {
         return self::INTERN_ROLES[$this->intern_role] ?? null;
+    }
+
+    public function teamRoleLabel(): ?string
+    {
+        return self::TEAM_ROLES[$this->team_role] ?? null;
+    }
+
+    public function isDirector(): bool
+    {
+        return $this->team_role === 'director';
+    }
+
+    public function isTeamManager(): bool
+    {
+        return $this->team_role === 'team_manager';
+    }
+
+    public function isTeamMember(): bool
+    {
+        return $this->team_role === 'team_member';
     }
 
     public function evaluationsGiven()
