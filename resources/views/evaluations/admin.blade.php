@@ -63,19 +63,24 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @php
+                        $actionsCell = function ($eval) {
+                            return view('evaluations.partials.admin-actions', ['eval' => $eval])->render();
+                        };
+                    @endphp
+
                     @if($row['self'])
                         <tr>
                             <td><span class="badge">Self</span></td>
-                            <td>{{ $row['self']->evaluator->name }}</td>
+                            <td>
+                                {{ $row['self']->evaluator->name }}
+                                @if($row['self']->isConfirmed())
+                                    <span class="badge" style="background:#dbeafe;color:#1e40af;margin-left:6px;">Confirmed</span>
+                                @endif
+                            </td>
                             <td>{{ $row['self']->submitted_at?->format('Y-m-d H:i') }}</td>
                             <td>{{ $row['self']->self_score }} / 5</td>
-                            <td>
-                                <a href="{{ route('evaluations.show', $row['self']) }}" class="btn btn-sm btn-outline">View</a>
-                                <form method="POST" action="{{ route('evaluations.destroy', $row['self']) }}" style="display:inline" onsubmit="return confirm('Delete this evaluation?');">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                </form>
-                            </td>
+                            <td>{!! $actionsCell($row['self']) !!}</td>
                         </tr>
                     @else
                         <tr><td colspan="5" class="text-muted">Self-assessment not yet submitted</td></tr>
@@ -84,41 +89,36 @@
                     @forelse($row['peers'] as $peer)
                         <tr>
                             <td><span class="badge">Peer</span></td>
-                            <td>{{ $peer->evaluator->name }}</td>
+                            <td>
+                                {{ $peer->evaluator->name }}
+                                @if($peer->isConfirmed())
+                                    <span class="badge" style="background:#dbeafe;color:#1e40af;margin-left:6px;">Confirmed</span>
+                                @endif
+                            </td>
                             <td>{{ $peer->submitted_at?->format('Y-m-d H:i') }}</td>
                             <td>{{ $peer->averageRating() }} / 5</td>
-                            <td>
-                                <a href="{{ route('evaluations.show', $peer) }}" class="btn btn-sm btn-outline">View</a>
-                                <form method="POST" action="{{ route('evaluations.destroy', $peer) }}" style="display:inline" onsubmit="return confirm('Delete this evaluation?');">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                </form>
-                            </td>
+                            <td>{!! $actionsCell($peer) !!}</td>
                         </tr>
                     @empty
                         <tr><td colspan="5" class="text-muted">No peer reviews yet</td></tr>
                     @endforelse
 
-                    @if($row['manager'])
+                    @forelse($row['managers'] as $manager)
                         <tr>
-                            <td><span class="badge">Manager</span></td>
-                            <td>{{ $row['manager']->evaluator->name }}</td>
-                            <td>{{ $row['manager']->submitted_at?->format('Y-m-d H:i') }}</td>
-                            <td>{{ $row['manager']->weightedScore() }} / 5</td>
+                            <td><span class="badge" style="background:#fef3c7;color:#92400e;">{{ $manager->evaluator->teamRoleLabel() ?? 'Superior' }}</span></td>
                             <td>
-                                <a href="{{ route('evaluations.show', $row['manager']) }}" class="btn btn-sm btn-outline">View</a>
-                                @if($row['manager']->evaluator_id === auth()->id())
-                                    <a href="{{ route('evaluations.edit', $row['manager']) }}" class="btn btn-sm btn-primary">Edit</a>
+                                {{ $manager->evaluator->name }}
+                                @if($manager->isConfirmed())
+                                    <span class="badge" style="background:#dbeafe;color:#1e40af;margin-left:6px;">Confirmed</span>
                                 @endif
-                                <form method="POST" action="{{ route('evaluations.destroy', $row['manager']) }}" style="display:inline" onsubmit="return confirm('Delete this evaluation?');">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                </form>
                             </td>
+                            <td>{{ $manager->submitted_at?->format('Y-m-d H:i') }}</td>
+                            <td>{{ $manager->weightedScore() }} / 5</td>
+                            <td>{!! $actionsCell($manager) !!}</td>
                         </tr>
-                    @else
-                        <tr><td colspan="5" class="text-muted">Manager evaluation not yet submitted</td></tr>
-                    @endif
+                    @empty
+                        <tr><td colspan="5" class="text-muted">No superior evaluations yet</td></tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>

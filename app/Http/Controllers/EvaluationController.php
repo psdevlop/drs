@@ -58,13 +58,14 @@ class EvaluationController extends Controller
             + collect($peer)->where('completed', true)->count()
             + ($self && $self['completed'] ? 1 : 0);
 
-        $deadline = \Carbon\Carbon::parse(self::DEADLINE);
-        $daysRemaining = max(0, (int) round(now()->diffInDays($deadline, false)));
+        $deadline = \Carbon\Carbon::parse(self::DEADLINE)->startOfDay();
+        $today = \Carbon\Carbon::now()->startOfDay();
+        $daysRemaining = $today->lte($deadline) ? ((int) $today->diffInDays($deadline)) + 1 : 0;
 
         $canViewResults = $me->isDirector() || $me->isTeamManager() || $me->isAdmin();
         $resultsSummary = [];
         if ($canViewResults) {
-            foreach ($cohort->where('team_role', 'team_member') as $intern) {
+            foreach ($cohort->whereIn('team_role', ['team_manager', 'team_member']) as $intern) {
                 $hasManager = Evaluation::where('evaluee_id', $intern->id)->where('type', 'manager')->exists();
                 $hasSelf = Evaluation::where('evaluee_id', $intern->id)->where('type', 'self')->exists();
                 $peerCount = Evaluation::where('evaluee_id', $intern->id)->where('type', 'peer')->count();
@@ -205,7 +206,7 @@ class EvaluationController extends Controller
 
     public function adminIndex(Request $request)
     {
-        $interns = User::where('team_role', 'team_member')->orderBy('name')->get();
+        $interns = User::whereIn('team_role', ['team_manager', 'team_member'])->orderBy('name')->get();
 
         $matrix = [];
         foreach ($interns as $intern) {
