@@ -130,6 +130,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/evaluations/{evaluation}/confirm', [EvaluationController::class, 'confirm'])
         ->whereNumber('evaluation')
         ->name('evaluations.confirm');
+    Route::get('/evaluations/intern/{user}/report', [EvaluationController::class, 'internReport'])
+        ->name('evaluations.intern-report');
 
     // Services (view only for all users)
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');

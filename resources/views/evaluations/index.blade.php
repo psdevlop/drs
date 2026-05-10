@@ -46,9 +46,10 @@
 .stat-grid .stat .value { font-size: 28px; font-weight: 700; color: #111827; }
 .stat-grid .stat .value small { font-size: 14px; font-weight: 500; color: #9ca3af; }
 .stat-grid .stat .sub { color: #6b7280; font-size: 12px; margin-top: 2px; }
+.eval-table tr.group-start td { border-top: 1px solid #e5e7eb; }
+.eval-table tr:first-child.group-start td { border-top: 0; }
 @media (max-width: 720px) {
     .eval-section-header { flex-direction: column; align-items: flex-start; gap: 8px; }
-    .eval-table th:nth-child(2), .eval-table td:nth-child(2) { display: none; }
     .stat-grid { grid-template-columns: 1fr; gap: 14px; }
 }
 </style>
@@ -73,133 +74,154 @@
     </div>
 @endif
 
-@if(!empty($superior))
-    @php $superiorDone = collect($superior)->where('completed', true)->count(); @endphp
-    <div class="eval-section">
-        <div class="eval-section-header">
-            <div class="title-block">
-                <span class="num s1">1</span>
-                <div>
-                    <h3>Superior Reviews — Subordinate Evaluations</h3>
-                    <div class="desc">As a superior, evaluate the team members who report to you. This carries 50% weight in the composite score.</div>
-                </div>
+@php
+    $renderStatus = function ($slot) {
+        if ($slot['completed'] && $slot['evaluation']->isConfirmed()) {
+            return '<span class="eval-status confirmed"><span class="dot"></span>Confirmed</span>';
+        }
+        if ($slot['completed']) {
+            return '<span class="eval-status done"><span class="dot"></span>Submitted</span>';
+        }
+        return '<span class="eval-status pending"><span class="dot"></span>Pending</span>';
+    };
+@endphp
+
+@php
+    $superiorMine = collect($superior)->where('is_mine', true);
+    $superiorDone = $superiorMine->where('completed', true)->count();
+@endphp
+<div class="eval-section">
+    <div class="eval-section-header">
+        <div class="title-block">
+            <span class="num s1">1</span>
+            <div>
+                <h3>Superior Reviews — Subordinate Evaluations</h3>
+                <div class="desc">As a superior, evaluate the team members who report to you. This carries 50% weight in the composite score.</div>
             </div>
-            <div class="progress-pill">{{ $superiorDone }} / {{ count($superior) }} complete</div>
         </div>
-        <table class="eval-table">
-            <thead><tr><th>Person</th><th>Role</th><th>Status</th><th></th></tr></thead>
-            <tbody>
-                @foreach($superior as $task)
-                    <tr>
-                        <td><strong>{{ $task['person']->name }}</strong></td>
-                        <td>{{ $task['person']->teamRoleLabel() }} @if($task['person']->internRoleLabel())<span class="text-muted text-xs"> · {{ $task['person']->internRoleLabel() }}</span>@endif</td>
+        <div class="progress-pill">@if($superiorMine->count()){{ $superiorDone }} / {{ $superiorMine->count() }} complete @else view only @endif</div>
+    </div>
+    <table class="eval-table">
+        <thead><tr><th>Reviewer</th><th>Subject</th><th>Role</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+            @forelse(collect($superior)->groupBy(fn($s) => $s['evaluator']->id) as $group)
+                @php $reviewer = $group->first()['evaluator']; $count = $group->count(); @endphp
+                @foreach($group as $i => $slot)
+                    <tr class="{{ $i === 0 ? 'group-start' : '' }}">
+                        @if($i === 0)
+                            <td rowspan="{{ $count }}" style="width:22%;vertical-align:top;">
+                                <strong>{{ $reviewer->name }}</strong>
+                                <div class="text-muted text-xs">{{ $reviewer->teamRoleLabel() }}</div>
+                            </td>
+                        @endif
+                        <td><strong>{{ $slot['evaluee']->name }}</strong></td>
+                        <td class="text-muted text-xs">{{ $slot['evaluee']->internRoleLabel() ?? $slot['evaluee']->teamRoleLabel() }}</td>
+                        <td>{!! $renderStatus($slot) !!}</td>
                         <td>
-                            @if($task['completed'] && $task['evaluation']->isConfirmed())
-                                <span class="eval-status confirmed"><span class="dot"></span>Confirmed</span>
-                            @elseif($task['completed'])
-                                <span class="eval-status done"><span class="dot"></span>Submitted</span>
-                            @else
-                                <span class="eval-status pending"><span class="dot"></span>Pending</span>
-                            @endif
-                        </td>
-                        <td>
-                            @if($task['completed'])
-                                <a href="{{ route('evaluations.show', $task['evaluation']) }}" class="btn btn-sm btn-outline">View</a>
-                            @else
-                                <a href="{{ route('evaluations.create', ['manager', $task['person']]) }}" class="btn btn-sm btn-primary">Fill Out</a>
+                            @if($slot['is_mine'] && !$slot['completed'])
+                                <a href="{{ route('evaluations.create', ['manager', $slot['evaluee']]) }}" class="btn btn-sm btn-primary">Fill Out</a>
+                            @elseif($slot['completed'] && ($slot['is_mine'] || auth()->user()->isAdmin() || auth()->user()->isDirector() || auth()->user()->isTeamManager()))
+                                <a href="{{ route('evaluations.show', $slot['evaluation']) }}" class="btn btn-sm btn-outline">View</a>
                             @endif
                         </td>
                     </tr>
                 @endforeach
-            </tbody>
-        </table>
-    </div>
-@endif
+            @empty
+                <tr><td colspan="5" class="text-muted" style="padding:18px 22px;">No superior evaluations defined.</td></tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
 
-@if($self !== null)
-    <div class="eval-section">
-        <div class="eval-section-header">
-            <div class="title-block">
-                <span class="num s2">2</span>
-                <div>
-                    <h3>Self Assessment</h3>
-                    <div class="desc">Reflect on your own work over the two-month internship period. This carries 20% weight in the composite score.</div>
-                </div>
+@php
+    $selfMine = collect($self)->where('is_mine', true);
+    $selfDone = $selfMine->where('completed', true)->count();
+@endphp
+<div class="eval-section">
+    <div class="eval-section-header">
+        <div class="title-block">
+            <span class="num s2">2</span>
+            <div>
+                <h3>Self Assessment</h3>
+                <div class="desc">Reflect on your own work over the two-month internship period. This carries 20% weight in the composite score.</div>
             </div>
-            <div class="progress-pill">{{ $self['completed'] ? '1' : '0' }} / 1 complete</div>
         </div>
-        <table class="eval-table">
-            <thead><tr><th>Person</th><th>Role</th><th>Status</th><th></th></tr></thead>
-            <tbody>
+        <div class="progress-pill">@if($selfMine->count()){{ $selfDone }} / {{ $selfMine->count() }} complete @else view only @endif</div>
+    </div>
+    <table class="eval-table">
+        <thead><tr><th>Person</th><th>Role</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+            @forelse($self as $slot)
                 <tr>
-                    <td><strong>{{ $self['person']->name }}</strong></td>
-                    <td>Self · {{ $self['person']->teamRoleLabel() }} @if($self['person']->internRoleLabel())<span class="text-muted text-xs"> · {{ $self['person']->internRoleLabel() }}</span>@endif</td>
+                    <td><strong>{{ $slot['evaluator']->name }}</strong></td>
+                    <td>Self · {{ $slot['evaluator']->teamRoleLabel() }} @if($slot['evaluator']->internRoleLabel())<span class="text-muted text-xs"> · {{ $slot['evaluator']->internRoleLabel() }}</span>@endif</td>
+                    <td>{!! $renderStatus($slot) !!}</td>
                     <td>
-                        @if($self['completed'] && $self['evaluation']->isConfirmed())
-                            <span class="eval-status confirmed"><span class="dot"></span>Confirmed</span>
-                        @elseif($self['completed'])
-                            <span class="eval-status done"><span class="dot"></span>Submitted</span>
-                        @else
-                            <span class="eval-status pending"><span class="dot"></span>Pending</span>
-                        @endif
-                    </td>
-                    <td>
-                        @if($self['completed'])
-                            <a href="{{ route('evaluations.show', $self['evaluation']) }}" class="btn btn-sm btn-outline">View</a>
-                        @else
-                            <a href="{{ route('evaluations.create', ['self', $self['person']]) }}" class="btn btn-sm btn-primary">Fill Out</a>
+                        @if($slot['is_mine'] && !$slot['completed'])
+                            <a href="{{ route('evaluations.create', ['self', $slot['evaluator']]) }}" class="btn btn-sm btn-primary">Fill Out</a>
+                        @elseif($slot['completed'] && ($slot['is_mine'] || auth()->user()->isAdmin() || auth()->user()->isDirector() || auth()->user()->isTeamManager()))
+                            <a href="{{ route('evaluations.show', $slot['evaluation']) }}" class="btn btn-sm btn-outline">View</a>
                         @endif
                     </td>
                 </tr>
-            </tbody>
-        </table>
-    </div>
-@endif
+            @empty
+                <tr><td colspan="4" class="text-muted" style="padding:18px 22px;">No self assessments defined.</td></tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
 
-@if(!empty($peer))
-    @php $peerDone = collect($peer)->where('completed', true)->count(); @endphp
-    <div class="eval-section">
-        <div class="eval-section-header">
-            <div class="title-block">
-                <span class="num s3">3</span>
-                <div>
-                    <h3>Peer Reviews</h3>
-                    <div class="desc">Evaluate the colleagues you work alongside. This carries 30% weight in the composite score. Behavioral examples matter more than scores.</div>
-                </div>
+@php
+    $peerMine = collect($peer)->where('is_mine', true);
+    $peerDone = $peerMine->where('completed', true)->count();
+@endphp
+<div class="eval-section">
+    <div class="eval-section-header">
+        <div class="title-block">
+            <span class="num s3">3</span>
+            <div>
+                <h3>Peer Reviews</h3>
+                <div class="desc">Evaluate the colleagues you work alongside. This carries 30% weight in the composite score. Behavioral examples matter more than scores.</div>
             </div>
-            <div class="progress-pill">{{ $peerDone }} / {{ count($peer) }} complete</div>
         </div>
-        <table class="eval-table">
-            <thead><tr><th>Person</th><th>Role</th><th>Status</th><th></th></tr></thead>
-            <tbody>
-                @foreach($peer as $task)
-                    <tr>
-                        <td><strong>{{ $task['person']->name }}</strong></td>
-                        <td>{{ $task['person']->teamRoleLabel() }} @if($task['person']->internRoleLabel())<span class="text-muted text-xs"> · {{ $task['person']->internRoleLabel() }}</span>@endif</td>
+        <div class="progress-pill">@if($peerMine->count()){{ $peerDone }} / {{ $peerMine->count() }} complete @else view only @endif</div>
+    </div>
+    <table class="eval-table">
+        <thead><tr><th>Reviewer</th><th>Subject</th><th>Role</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+            @forelse(collect($peer)->groupBy(fn($s) => $s['evaluator']->id) as $group)
+                @php $reviewer = $group->first()['evaluator']; $count = $group->count(); @endphp
+                @foreach($group as $i => $slot)
+                    <tr class="{{ $i === 0 ? 'group-start' : '' }}">
+                        @if($i === 0)
+                            <td rowspan="{{ $count }}" style="width:22%;vertical-align:top;">
+                                <strong>{{ $reviewer->name }}</strong>
+                                <div class="text-muted text-xs">{{ $reviewer->teamRoleLabel() }}</div>
+                            </td>
+                        @endif
+                        <td><strong>{{ $slot['evaluee']->name }}</strong></td>
+                        <td class="text-muted text-xs">{{ $slot['evaluee']->internRoleLabel() ?? $slot['evaluee']->teamRoleLabel() }}</td>
+                        <td>{!! $renderStatus($slot) !!}</td>
                         <td>
-                            @if($task['completed'] && $task['evaluation']->isConfirmed())
-                                <span class="eval-status confirmed"><span class="dot"></span>Confirmed</span>
-                            @elseif($task['completed'])
-                                <span class="eval-status done"><span class="dot"></span>Submitted</span>
-                            @else
-                                <span class="eval-status pending"><span class="dot"></span>Pending</span>
-                            @endif
-                        </td>
-                        <td>
-                            @if($task['completed'])
-                                <a href="{{ route('evaluations.show', $task['evaluation']) }}" class="btn btn-sm btn-outline">View</a>
-                            @else
-                                <a href="{{ route('evaluations.create', ['peer', $task['person']]) }}" class="btn btn-sm btn-primary">Fill Out</a>
+                            @if($slot['is_mine'] && !$slot['completed'])
+                                <a href="{{ route('evaluations.create', ['peer', $slot['evaluee']]) }}" class="btn btn-sm btn-primary">Fill Out</a>
+                            @elseif($slot['completed'] && ($slot['is_mine'] || auth()->user()->isAdmin() || auth()->user()->isDirector() || auth()->user()->isTeamManager()))
+                                <a href="{{ route('evaluations.show', $slot['evaluation']) }}" class="btn btn-sm btn-outline">View</a>
                             @endif
                         </td>
                     </tr>
                 @endforeach
-            </tbody>
-        </table>
-    </div>
-@endif
+            @empty
+                <tr><td colspan="5" class="text-muted" style="padding:18px 22px;">No peer reviews defined.</td></tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
 
-@if($canViewResults)
+@php
+    // Section 4 is always rendered; results access depends on role
+@endphp
+@if(true)
     <div class="eval-section">
         <div class="eval-section-header">
             <div class="title-block">
@@ -224,8 +246,8 @@
             </div>
             <div class="stat">
                 <div class="label">Results Access</div>
-                <div class="value" style="color:#22c55e">✓</div>
-                <div class="sub">{{ count($resultsSummary) }} reports available</div>
+                <div class="value" style="color:{{ $canViewResults ? '#22c55e' : '#9ca3af' }}">{{ $canViewResults ? '✓' : '—' }}</div>
+                <div class="sub">{{ $canViewResults ? count($resultsSummary) . ' reports available' : 'Restricted' }}</div>
             </div>
         </div>
         @if(!empty($resultsSummary))
@@ -244,8 +266,11 @@
                                 @endif
                             </td>
                             <td>
-                                @if(auth()->user()->isAdmin())
-                                    <a href="{{ route('admin.evaluations.index') }}" class="btn btn-sm btn-outline">View Report</a>
+                                @php
+                                    $canSee = auth()->user()->isAdmin() || auth()->user()->isDirector() || auth()->user()->isTeamManager() || auth()->id() === $row['user']->id;
+                                @endphp
+                                @if($canSee)
+                                    <a href="{{ route('evaluations.intern-report', $row['user']) }}" class="btn btn-sm btn-outline">View Report</a>
                                 @else
                                     <span class="btn btn-sm btn-outline" style="opacity:.5;cursor:not-allowed">View Report</span>
                                 @endif

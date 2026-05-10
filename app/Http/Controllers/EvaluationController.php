@@ -16,47 +16,49 @@ class EvaluationController extends Controller
         $me = auth()->user();
         $cohort = User::whereNotNull('team_role')->orderBy('name')->get();
 
-        $myEvaluations = Evaluation::where('evaluator_id', $me->id)
-            ->get()
-            ->keyBy(fn ($e) => $e->type . ':' . $e->evaluee_id);
+        $allEvals = Evaluation::all()->keyBy(fn ($e) => $e->type . ':' . $e->evaluator_id . ':' . $e->evaluee_id);
 
         $superior = [];
+        $self = [];
         $peer = [];
-        $self = null;
 
-        if ($me->isDirector()) {
-            foreach ($cohort as $person) {
-                if ($person->id === $me->id) continue;
-                if (!in_array($person->team_role, ['team_manager', 'team_member'], true)) continue;
-                $superior[] = $this->taskRow('manager', $person, $myEvaluations);
-            }
-        } elseif ($me->isTeamManager()) {
-            foreach ($cohort as $person) {
-                if ($person->team_role === 'team_member') {
-                    $superior[] = $this->taskRow('manager', $person, $myEvaluations);
+        foreach ($cohort as $u) {
+            if ($u->team_role === 'director') {
+                foreach ($cohort as $v) {
+                    if ($v->id !== $u->id && in_array($v->team_role, ['team_manager', 'team_member'], true)) {
+                        $superior[] = $this->slot('manager', $u, $v, $allEvals, $me);
+                    }
                 }
             }
-            $self = $this->taskRow('self', $me, $myEvaluations);
-            foreach ($cohort as $person) {
-                if ($person->id === $me->id) continue;
-                if (in_array($person->team_role, ['team_manager', 'team_member'], true)) {
-                    $peer[] = $this->taskRow('peer', $person, $myEvaluations);
+            if ($u->team_role === 'team_manager') {
+                foreach ($cohort as $v) {
+                    if ($v->team_role === 'team_member') {
+                        $superior[] = $this->slot('manager', $u, $v, $allEvals, $me);
+                    }
+                }
+                $self[] = $this->slot('self', $u, $u, $allEvals, $me);
+                foreach ($cohort as $v) {
+                    if ($v->id !== $u->id && in_array($v->team_role, ['team_manager', 'team_member'], true)) {
+                        $peer[] = $this->slot('peer', $u, $v, $allEvals, $me);
+                    }
                 }
             }
-        } elseif ($me->isTeamMember()) {
-            $self = $this->taskRow('self', $me, $myEvaluations);
-            foreach ($cohort as $person) {
-                if ($person->id === $me->id) continue;
-                if (in_array($person->team_role, ['team_manager', 'team_member'], true)) {
-                    $peer[] = $this->taskRow('peer', $person, $myEvaluations);
+            if ($u->team_role === 'team_member') {
+                $self[] = $this->slot('self', $u, $u, $allEvals, $me);
+                foreach ($cohort as $v) {
+                    if ($v->id !== $u->id && in_array($v->team_role, ['team_manager', 'team_member'], true)) {
+                        $peer[] = $this->slot('peer', $u, $v, $allEvals, $me);
+                    }
                 }
             }
         }
 
-        $totalForms = count($superior) + count($peer) + ($self ? 1 : 0);
-        $completedForms = collect($superior)->where('completed', true)->count()
-            + collect($peer)->where('completed', true)->count()
-            + ($self && $self['completed'] ? 1 : 0);
+        $totalForms = collect($superior)->where('is_mine', true)->count()
+            + collect($peer)->where('is_mine', true)->count()
+            + collect($self)->where('is_mine', true)->count();
+        $completedForms = collect($superior)->where('is_mine', true)->where('completed', true)->count()
+            + collect($peer)->where('is_mine', true)->where('completed', true)->count()
+            + collect($self)->where('is_mine', true)->where('completed', true)->count();
 
         $deadline = \Carbon\Carbon::parse(self::DEADLINE)->startOfDay();
         $today = \Carbon\Carbon::now()->startOfDay();
@@ -64,16 +66,14 @@ class EvaluationController extends Controller
 
         $canViewResults = $me->isDirector() || $me->isTeamManager() || $me->isAdmin();
         $resultsSummary = [];
-        if ($canViewResults) {
-            foreach ($cohort->whereIn('team_role', ['team_manager', 'team_member']) as $intern) {
-                $hasManager = Evaluation::where('evaluee_id', $intern->id)->where('type', 'manager')->exists();
-                $hasSelf = Evaluation::where('evaluee_id', $intern->id)->where('type', 'self')->exists();
-                $peerCount = Evaluation::where('evaluee_id', $intern->id)->where('type', 'peer')->count();
-                $resultsSummary[] = [
-                    'user' => $intern,
-                    'has_data' => $hasManager || $hasSelf || $peerCount > 0,
-                ];
-            }
+        foreach ($cohort->whereIn('team_role', ['team_manager', 'team_member']) as $intern) {
+            $hasManager = Evaluation::where('evaluee_id', $intern->id)->where('type', 'manager')->exists();
+            $hasSelf = Evaluation::where('evaluee_id', $intern->id)->where('type', 'self')->exists();
+            $peerCount = Evaluation::where('evaluee_id', $intern->id)->where('type', 'peer')->count();
+            $resultsSummary[] = [
+                'user' => $intern,
+                'has_data' => $hasManager || $hasSelf || $peerCount > 0,
+            ];
         }
 
         return view('evaluations.index', compact(
@@ -82,15 +82,17 @@ class EvaluationController extends Controller
         ));
     }
 
-    private function taskRow(string $type, User $person, $myEvaluations): array
+    private function slot(string $type, User $evaluator, User $evaluee, $allEvals, User $me): array
     {
-        $key = $type . ':' . $person->id;
-        $evaluation = $myEvaluations[$key] ?? null;
+        $key = $type . ':' . $evaluator->id . ':' . $evaluee->id;
+        $evaluation = $allEvals[$key] ?? null;
         return [
             'type' => $type,
-            'person' => $person,
+            'evaluator' => $evaluator,
+            'evaluee' => $evaluee,
             'completed' => $evaluation !== null,
             'evaluation' => $evaluation,
+            'is_mine' => $evaluator->id === $me->id,
         ];
     }
 
@@ -202,6 +204,47 @@ class EvaluationController extends Controller
         $evaluation->load(['evaluator', 'evaluee', 'confirmedBy']);
         $ratingItems = Evaluation::ratingItems($evaluation->type, $evaluation->intern_role);
         return view('evaluations.show', compact('evaluation', 'ratingItems'));
+    }
+
+    public function internReport(User $user)
+    {
+        $me = auth()->user();
+        $allowed = $me->isAdmin() || $me->isDirector() || $me->isTeamManager() || $me->id === $user->id;
+        if (!$allowed) {
+            abort(Response::HTTP_FORBIDDEN);
+        }
+        if (!in_array($user->team_role, ['team_manager', 'team_member'], true)) {
+            abort(404, 'No report available for this user.');
+        }
+
+        $received = Evaluation::with(['evaluator', 'confirmedBy'])
+            ->where('evaluee_id', $user->id)
+            ->orderBy('type')
+            ->get();
+
+        $self = $received->firstWhere('type', 'self');
+        $peers = $received->where('type', 'peer')->values();
+        $managers = $received->where('type', 'manager')->values();
+
+        $managerScore = $managers->isNotEmpty()
+            ? round($managers->avg(fn ($e) => $e->weightedScore() ?? 0), 2)
+            : null;
+        $peerAvg = $peers->isNotEmpty()
+            ? round($peers->avg(fn ($e) => $e->averageRating() ?? 0), 2)
+            : null;
+        $selfScore = $self?->self_score !== null ? (float) $self->self_score : null;
+
+        $composite = null;
+        if ($managerScore !== null && $peerAvg !== null && $selfScore !== null) {
+            $composite = round(($managerScore * 0.5) + ($peerAvg * 0.3) + ($selfScore * 0.2), 2);
+        }
+
+        $grade = $this->grade($composite);
+
+        return view('evaluations.intern-report', compact(
+            'user', 'self', 'peers', 'managers',
+            'managerScore', 'peerAvg', 'selfScore', 'composite', 'grade'
+        ));
     }
 
     public function adminIndex(Request $request)
