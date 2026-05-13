@@ -89,6 +89,7 @@
 @php
     $superiorMine = collect($superior)->where('is_mine', true);
     $superiorDone = $superiorMine->where('completed', true)->count();
+    $superiorSorted = collect($superior)->sortBy(fn($s) => ($s['is_mine'] && !$s['completed']) ? 0 : 1)->values();
 @endphp
 <div class="eval-section">
     <div class="eval-section-header">
@@ -104,7 +105,7 @@
     <table class="eval-table">
         <thead><tr><th>Reviewer</th><th>Subject</th><th>Role</th><th>Status</th><th></th></tr></thead>
         <tbody>
-            @forelse(collect($superior)->groupBy(fn($s) => $s['evaluator']->id) as $group)
+            @forelse($superiorSorted->groupBy(fn($s) => $s['evaluator']->id) as $group)
                 @php $reviewer = $group->first()['evaluator']; $count = $group->count(); @endphp
                 @foreach($group as $i => $slot)
                     <tr class="{{ $i === 0 ? 'group-start' : '' }}">
@@ -136,6 +137,7 @@
 @php
     $selfMine = collect($self)->where('is_mine', true);
     $selfDone = $selfMine->where('completed', true)->count();
+    $selfSorted = collect($self)->sortBy(fn($s) => ($s['is_mine'] && !$s['completed']) ? 0 : 1)->values();
 @endphp
 <div class="eval-section">
     <div class="eval-section-header">
@@ -151,7 +153,7 @@
     <table class="eval-table">
         <thead><tr><th>Person</th><th>Role</th><th>Status</th><th></th></tr></thead>
         <tbody>
-            @forelse($self as $slot)
+            @forelse($selfSorted as $slot)
                 <tr>
                     <td><strong>{{ $slot['evaluator']->name }}</strong></td>
                     <td>Self · {{ $slot['evaluator']->teamRoleLabel() }} @if($slot['evaluator']->internRoleLabel())<span class="text-muted text-xs"> · {{ $slot['evaluator']->internRoleLabel() }}</span>@endif</td>
@@ -174,6 +176,7 @@
 @php
     $peerMine = collect($peer)->where('is_mine', true);
     $peerDone = $peerMine->where('completed', true)->count();
+    $peerSorted = collect($peer)->sortBy(fn($s) => ($s['is_mine'] && !$s['completed']) ? 0 : 1)->values();
 @endphp
 <div class="eval-section">
     <div class="eval-section-header">
@@ -189,7 +192,7 @@
     <table class="eval-table">
         <thead><tr><th>Reviewer</th><th>Subject</th><th>Role</th><th>Status</th><th></th></tr></thead>
         <tbody>
-            @forelse(collect($peer)->groupBy(fn($s) => $s['evaluator']->id) as $group)
+            @forelse($peerSorted->groupBy(fn($s) => $s['evaluator']->id) as $group)
                 @php $reviewer = $group->first()['evaluator']; $count = $group->count(); @endphp
                 @foreach($group as $i => $slot)
                     <tr class="{{ $i === 0 ? 'group-start' : '' }}">

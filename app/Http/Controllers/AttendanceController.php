@@ -13,6 +13,9 @@ class AttendanceController extends Controller
     {
         $user = $request->user();
         $today = now()->toDateString();
+
+        $this->autoCompleteMissedCheckouts($user->id, $today);
+
         $todayAttendance = Attendance::where('user_id', $user->id)->where('date', $today)->first();
 
         $query = Attendance::with('user');
@@ -61,6 +64,8 @@ class AttendanceController extends Controller
         $user = $request->user();
         $today = now()->toDateString();
 
+        $this->autoCompleteMissedCheckouts($user->id, $today);
+
         $attendance = Attendance::where('user_id', $user->id)->where('date', $today)->first();
 
         if ($attendance && $attendance->check_in) {
@@ -100,5 +105,20 @@ class AttendanceController extends Controller
         $attendance->update(['total_hours' => $attendance->calculateHours()]);
 
         return redirect()->back()->with('success', __('messages.checked_out_success'));
+    }
+
+    private function autoCompleteMissedCheckouts(int $userId, string $today): void
+    {
+        Attendance::where('user_id', $userId)
+            ->whereNotNull('check_in')
+            ->whereNull('check_out')
+            ->whereDate('date', '<', $today)
+            ->get()
+            ->each(function (Attendance $att) {
+                $att->update([
+                    'check_out' => $att->check_in->copy()->addHours(8)->addMinutes(16),
+                    'total_hours' => 8.27,
+                ]);
+            });
     }
 }
