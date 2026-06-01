@@ -74,7 +74,7 @@
                             <td style="white-space:nowrap;">
                                 @if($service->expiration_date)
                                     <span class="{{ $service->isExpired() ? 'text-danger' : ($service->isExpiringSoon() ? 'text-warning' : '') }}">
-                                        {{ $service->expiration_date->format('M d, Y') }}
+                                        {{ $service->expiration_date->translatedFormat(__('messages.date_format_medium')) }}
                                     </span>
                                     @if($service->isExpired())
                                         <div class="text-danger text-sm">{{ __('messages.service_expired') }}</div>

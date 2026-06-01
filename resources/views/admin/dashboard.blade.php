@@ -37,7 +37,7 @@
                             <div class="text-bold">{{ $user->name }}</div>
                             <div class="text-muted text-xs">{{ $user->email }}</div>
                         </td>
-                        <td><span class="badge badge-{{ $user->role }}">{{ $user->role }}</span></td>
+                        <td><span class="badge badge-{{ $user->role }}">{{ __('messages.role_' . $user->role) }}</span></td>
                         <td>{{ $user->tasks_count }}</td>
                         <td>{{ $user->daily_reports_count }}</td>
                         <td><a href="{{ route('admin.user-reports', $user) }}" class="btn btn-sm btn-outline">{{ __('messages.reports') }}</a></td>
@@ -54,7 +54,7 @@
             <div class="list-item list-item-row">
                 <div>
                     <div class="text-bold">{{ $report->user->name }}</div>
-                    <div class="text-muted text-sm">{{ $report->report_date->format('M d, Y') }} - {{ Str::limit($report->summary, 40) }}</div>
+                    <div class="text-muted text-sm">{{ $report->report_date->translatedFormat(__('messages.date_format_medium')) }} - {{ Str::limit($report->summary, 40) }}</div>
                 </div>
                 <a href="{{ route('admin.show-report', $report) }}" class="btn btn-sm btn-outline">{{ __('messages.view') }}</a>
             </div>

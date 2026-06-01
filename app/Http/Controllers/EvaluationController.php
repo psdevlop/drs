@@ -107,7 +107,7 @@ class EvaluationController extends Controller
 
         if ($existing) {
             return redirect()->route('evaluations.show', $existing)
-                ->with('info', 'You have already submitted this evaluation. Use Edit to modify it.');
+                ->with('info', __('messages.evaluation_already_submitted_edit'));
         }
 
         $internRole = $user->intern_role;
@@ -128,7 +128,7 @@ class EvaluationController extends Controller
             ->first();
         if ($existing) {
             return redirect()->route('evaluations.show', $existing)
-                ->with('info', 'You have already submitted this evaluation.');
+                ->with('info', __('messages.evaluation_already_submitted'));
         }
 
         $data = $this->validateAndExtract($request, $type, $user);
@@ -141,7 +141,7 @@ class EvaluationController extends Controller
         Evaluation::create($data);
 
         return redirect()->route('evaluations.index')
-            ->with('success', 'Evaluation submitted successfully.');
+            ->with('success', __('messages.evaluation_submitted'));
     }
 
     public function edit(Evaluation $evaluation)
@@ -167,7 +167,7 @@ class EvaluationController extends Controller
         $evaluation->update($data);
 
         return redirect()->route('evaluations.show', $evaluation)
-            ->with('success', 'Evaluation updated successfully.');
+            ->with('success', __('messages.evaluation_updated'));
     }
 
     public function destroy(Evaluation $evaluation)
@@ -178,20 +178,20 @@ class EvaluationController extends Controller
         }
         $evaluation->delete();
 
-        return redirect()->back()->with('success', 'Evaluation deleted.');
+        return redirect()->back()->with('success', __('messages.evaluation_deleted'));
     }
 
     public function confirm(Evaluation $evaluation)
     {
         $me = auth()->user();
         if (!$me->isAdmin()) {
-            abort(Response::HTTP_FORBIDDEN, 'Only admins can confirm evaluations.');
+            abort(Response::HTTP_FORBIDDEN, __('messages.only_admins_confirm_evaluations'));
         }
         $evaluation->confirmed_at = now();
         $evaluation->confirmed_by_id = $me->id;
         $evaluation->save();
 
-        return redirect()->back()->with('success', 'Evaluation confirmed.');
+        return redirect()->back()->with('success', __('messages.evaluation_confirmed'));
     }
 
     public function show(Evaluation $evaluation)
@@ -214,7 +214,7 @@ class EvaluationController extends Controller
             abort(Response::HTTP_FORBIDDEN);
         }
         if (!in_array($user->team_role, ['team_manager', 'team_member'], true)) {
-            abort(404, 'No report available for this user.');
+            abort(404, __('messages.no_report_available_user'));
         }
 
         $received = Evaluation::with(['evaluator', 'confirmedBy'])
@@ -324,26 +324,26 @@ class EvaluationController extends Controller
 
         if ($type === 'self') {
             if ($evaluee->id !== $me->id || !in_array($me->team_role, ['team_manager', 'team_member'], true)) {
-                abort(Response::HTTP_FORBIDDEN, 'Self-assessment is only available for team members and team managers.');
+                abort(Response::HTTP_FORBIDDEN, __('messages.self_assessment_only_team'));
             }
         } elseif ($type === 'peer') {
             $allowed = in_array($me->team_role, ['team_manager', 'team_member'], true)
                 && in_array($evaluee->team_role, ['team_manager', 'team_member'], true)
                 && $evaluee->id !== $me->id;
             if (!$allowed) {
-                abort(Response::HTTP_FORBIDDEN, 'Peer reviews are between team members and the team manager.');
+                abort(Response::HTTP_FORBIDDEN, __('messages.peer_reviews_only_team'));
             }
         } elseif ($type === 'manager') {
             if ($me->isDirector()) {
                 if (!in_array($evaluee->team_role, ['team_manager', 'team_member'], true)) {
-                    abort(Response::HTTP_FORBIDDEN, 'Director can only evaluate team manager and team members.');
+                    abort(Response::HTTP_FORBIDDEN, __('messages.director_manager_eval_only_team'));
                 }
             } elseif ($me->isTeamManager()) {
                 if ($evaluee->team_role !== 'team_member') {
-                    abort(Response::HTTP_FORBIDDEN, 'Team manager can only evaluate team members.');
+                    abort(Response::HTTP_FORBIDDEN, __('messages.team_manager_eval_only_members'));
                 }
             } else {
-                abort(Response::HTTP_FORBIDDEN, 'Only the director or team manager can submit superior evaluations.');
+                abort(Response::HTTP_FORBIDDEN, __('messages.only_director_manager_superior_eval'));
             }
         }
     }
@@ -353,7 +353,7 @@ class EvaluationController extends Controller
         $me = auth()->user();
         if ($me->isSuperAdmin()) return;
         if ($evaluation->evaluator_id !== $me->id) {
-            abort(Response::HTTP_FORBIDDEN, 'You can only modify evaluations you submitted.');
+            abort(Response::HTTP_FORBIDDEN, __('messages.modify_own_evaluations_only'));
         }
     }
 

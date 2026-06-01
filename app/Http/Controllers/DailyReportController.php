@@ -61,7 +61,7 @@ class DailyReportController extends Controller
                 'user_id' => $admin->id,
                 'type' => 'report_submitted',
                 'title' => __('messages.notif_report_submitted_title'),
-                'message' => __('messages.notif_report_submitted_message', ['user' => $request->user()->name, 'date' => $report->report_date->format('M d, Y')]),
+                'message' => __('messages.notif_report_submitted_message', ['user' => $request->user()->name, 'date' => $report->report_date->translatedFormat(__('messages.date_format_medium'))]),
                 'link' => route('reports.show', $report),
             ]);
         }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\NepaliGovernmentHolidays;
 use Illuminate\Database\Eloquent\Model;
 
 class Setting extends Model
@@ -29,19 +30,22 @@ class Setting extends Model
     {
         $value = static::get('holiday_dates');
         if (!$value) {
-            return [];
+            return NepaliGovernmentHolidays::dates();
         }
         $decoded = json_decode($value, true);
-        if (!$decoded) {
-            return [];
+        if (!is_array($decoded)) {
+            return NepaliGovernmentHolidays::dates();
         }
         // Normalize: support both old format ["2026-04-14"] and new format [{"date":"2026-04-14","reason":"..."}]
         $normalized = [];
         foreach ($decoded as $entry) {
             if (is_string($entry)) {
                 $normalized[] = ['date' => $entry, 'reason' => ''];
-            } else {
-                $normalized[] = $entry;
+            } elseif (is_array($entry) && !empty($entry['date'])) {
+                $normalized[] = [
+                    'date' => $entry['date'],
+                    'reason' => $entry['reason'] ?? '',
+                ];
             }
         }
         return $normalized;
@@ -50,6 +54,11 @@ class Setting extends Model
     public static function getHolidayDatesList(): array
     {
         return array_column(static::getHolidayDates(), 'date');
+    }
+
+    public static function getScheduleHolidayDates(): array
+    {
+        return NepaliGovernmentHolidays::forSchedule(static::getHolidayDates());
     }
 
     public static function getHolidayReason(string $date): ?string

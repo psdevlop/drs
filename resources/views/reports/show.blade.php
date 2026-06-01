@@ -2,7 +2,7 @@
 @section('title', __('messages.view_report'))
 @section('content')
 <div class="page-header">
-    <h1>{{ __('messages.view_report') }} - {{ $report->report_date->format('M d, Y (l)') }}@if(auth()->user()->isAdmin() && $report->user_id !== auth()->id()) <span class="text-muted text-xs">by {{ $report->user->name }}</span>@endif</h1>
+    <h1>{{ __('messages.view_report') }} - {{ $report->report_date->translatedFormat(__('messages.date_format_with_weekday')) }}@if(auth()->user()->isAdmin() && $report->user_id !== auth()->id()) <span class="text-muted text-xs">{{ __('messages.by_user', ['name' => $report->user->name]) }}</span>@endif</h1>
     <div class="actions">
         @if($report->user_id === auth()->id())
             <a href="{{ route('reports.edit', $report) }}" class="btn btn-outline">{{ __('messages.edit') }}</a>

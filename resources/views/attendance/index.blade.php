@@ -9,13 +9,13 @@
 <div class="card attendance-action-card">
     <div class="attendance-status-section">
         <div class="attendance-date">
-            <div class="attendance-date-day">{{ now()->format('d') }}</div>
+            <div class="attendance-date-day">{{ now()->translatedFormat('d') }}</div>
             <div>
-                <div class="attendance-date-month">{{ now()->format('F Y') }}</div>
-                <div class="attendance-date-weekday">{{ now()->format('l') }}</div>
+                <div class="attendance-date-month">{{ now()->translatedFormat(__('messages.date_format_month_year')) }}</div>
+                <div class="attendance-date-weekday">{{ now()->translatedFormat('l') }}</div>
             </div>
         </div>
-        <div class="attendance-clock" id="liveClock">{{ now()->format('h:i:s A') }}</div>
+        <div class="attendance-clock" id="liveClock">{{ now()->translatedFormat(__('messages.time_format')) }}</div>
     </div>
 
     <div class="attendance-actions-row">
@@ -36,7 +36,7 @@
             {{-- Checked in, not checked out --}}
             <div class="attendance-status-info">
                 <span class="attendance-status-dot status-checked-in"></span>
-                <span>{{ __('messages.checked_in_at') }} <strong>{{ $todayAttendance->check_in->format('h:i A') }}</strong></span>
+                <span>{{ __('messages.checked_in_at') }} <strong>{{ $todayAttendance->check_in->translatedFormat(__('messages.time_format_short')) }}</strong></span>
             </div>
             <form action="{{ route('attendance.check-out') }}" method="POST">
                 @csrf
@@ -51,7 +51,7 @@
                 <span class="attendance-status-dot status-completed"></span>
                 <span>
                     {{ __('messages.todays_attendance_complete') }}
-                    &mdash; {{ $todayAttendance->check_in->format('h:i A') }} ~ {{ $todayAttendance->check_out->format('h:i A') }}
+                    &mdash; {{ $todayAttendance->check_in->translatedFormat(__('messages.time_format_short')) }} ~ {{ $todayAttendance->check_out->translatedFormat(__('messages.time_format_short')) }}
                     <strong>({{ $todayAttendance->formattedHours() }})</strong>
                 </span>
             </div>
@@ -120,13 +120,13 @@
                 <tbody>
                     @foreach($attendances as $att)
                         <tr class="{{ $att->date->isToday() ? 'preview-today' : '' }}">
-                            <td class="text-bold">{{ $att->date->format('M d, Y') }}</td>
-                            <td>{{ $att->date->format('l') }}</td>
+                            <td class="text-bold">{{ $att->date->translatedFormat(__('messages.date_format_medium')) }}</td>
+                            <td>{{ $att->date->translatedFormat('l') }}</td>
                             @if(auth()->user()->isAdmin() && !request('user_id'))
                                 <td>{{ $att->user->name }}</td>
                             @endif
-                            <td>{{ $att->check_in?->format('h:i A') ?? '-' }}</td>
-                            <td>{{ $att->check_out?->format('h:i A') ?? '-' }}</td>
+                            <td>{{ $att->check_in?->translatedFormat(__('messages.time_format_short')) ?? '-' }}</td>
+                            <td>{{ $att->check_out?->translatedFormat(__('messages.time_format_short')) ?? '-' }}</td>
                             <td>{{ $att->formattedHours() }}</td>
                             <td>
                                 @if($att->isCompleted())
@@ -153,11 +153,9 @@
 <script>
 setInterval(function() {
     var now = new Date();
-    var h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
-    var ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12 || 12;
+    var clockLocale = '{{ app()->getLocale() === 'ko' ? 'ko-KR' : 'en-US' }}';
     document.getElementById('liveClock').textContent =
-        String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0') + ' ' + ampm;
+        now.toLocaleTimeString(clockLocale, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 }, 1000);
 </script>
 @endsection

@@ -218,6 +218,7 @@ select.form-control { appearance: auto; -webkit-appearance: menulist; -moz-appea
 .legend-in-progress { background: #3b82f6; }
 .legend-completed { background: #10b981; }
 .legend-report { background: #8b5cf6; }
+.legend-onduty { background: #0ea5e9; }
 .legend-oncall { background: #ef4444; }
 .legend-holiday { background: #ec4899; }
 
@@ -229,6 +230,8 @@ select.form-control { appearance: auto; -webkit-appearance: menulist; -moz-appea
 .fc .fc-button-primary:not(:disabled).fc-button-active { background: #1e40af; border-color: #1e40af; }
 .fc .fc-event { cursor: pointer; padding: 2px 4px; font-size: 0.8rem; border-radius: 4px; }
 .fc .fc-daygrid-event { margin-bottom: 2px; }
+.fc .fc-day-sat .fc-daygrid-day-number,
+.fc .fc-day-sun .fc-daygrid-day-number { color: #dc2626; }
 
 .calendar-tooltip { position: absolute; z-index: 1000; background: #1f2937; color: #fff; border-radius: 8px; padding: 0.75rem 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.2); max-width: 280px; font-size: 0.85rem; pointer-events: none; }
 .calendar-tooltip .tooltip-title { font-weight: 600; margin-bottom: 0.5rem; font-size: 0.95rem; }

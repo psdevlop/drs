@@ -53,10 +53,10 @@ document.addEventListener('DOMContentLoaded', function() {
             right: isMobile ? 'dayGridMonth,listWeek' : 'dayGridMonth,timeGridWeek'
         },
         buttonText: {
-            today: locale === 'ko' ? '오늘' : 'Today',
-            month: locale === 'ko' ? '월' : 'Month',
-            week: locale === 'ko' ? '주' : 'Week',
-            list: locale === 'ko' ? '목록' : 'List'
+            today: @json(__('messages.calendar_today')),
+            month: @json(__('messages.calendar_month')),
+            week: @json(__('messages.calendar_week')),
+            list: @json(__('messages.calendar_list'))
         },
         windowResize: function(view) {
             var mobile = window.innerWidth < 768;

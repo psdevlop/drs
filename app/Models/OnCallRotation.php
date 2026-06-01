@@ -33,13 +33,19 @@ class OnCallRotation extends Model
      */
     public static function isHoliday($date): bool
     {
+        static $holidayDays = null;
+        static $holidayDates = null;
+        if ($holidayDays === null) {
+            $holidayDays = Setting::getHolidayDays();
+            // Use schedule-filtered list so generic "Public Holiday" entries
+            // (the Nepali source's weekly pattern) don't disable the on-duty rotation.
+            $holidayDates = array_flip(array_column(Setting::getScheduleHolidayDates(), 'date'));
+        }
         $date = \Carbon\Carbon::parse($date);
-        $holidayDays = Setting::getHolidayDays();
-        if (in_array(strtolower($date->format('l')), $holidayDays)) {
+        if (in_array(strtolower($date->format('l')), $holidayDays, true)) {
             return true;
         }
-        $holidayDates = Setting::getHolidayDatesList();
-        return in_array($date->format('Y-m-d'), $holidayDates);
+        return isset($holidayDates[$date->format('Y-m-d')]);
     }
 
     /**
@@ -96,5 +102,46 @@ class OnCallRotation extends Model
     {
         $users = $this->getUsersForDate($date);
         return $users->first();
+    }
+
+    /**
+     * Pick the rotating on-call user for an off-day (Saturday or government holiday).
+     * Rotates one user per off-day across the rotation user list.
+     */
+    public function getOnCallUserForDate($date): ?User
+    {
+        $date = \Carbon\Carbon::parse($date);
+
+        if ($date->lt($this->start_date)) {
+            return null;
+        }
+        if ($this->end_date && $date->gt($this->end_date)) {
+            return null;
+        }
+
+        $users = $this->users;
+        if ($users->isEmpty()) {
+            return null;
+        }
+
+        $holidayDates = array_flip(array_column(Setting::getScheduleHolidayDates(), 'date'));
+
+        $offDayCount = 0;
+        $current = $this->start_date->copy();
+        while ($current->lte($date)) {
+            $isSat = $current->dayOfWeek === \Carbon\Carbon::SATURDAY;
+            $isHoliday = isset($holidayDates[$current->format('Y-m-d')]);
+            if ($isSat || $isHoliday) {
+                $offDayCount++;
+            }
+            $current->addDay();
+        }
+
+        if ($offDayCount === 0) {
+            return null;
+        }
+
+        $index = ($offDayCount - 1) % $users->count();
+        return $users[$index];
     }
 }

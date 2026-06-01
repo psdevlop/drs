@@ -36,11 +36,11 @@
                 @csrf
                 <div class="form-group">
                     <label for="name">{{ __('messages.full_name') }}</label>
-                    <input type="text" id="name" name="name" class="form-control" value="{{ old('name') }}" placeholder="John Doe" required autofocus>
+                    <input type="text" id="name" name="name" class="form-control" value="{{ old('name') }}" placeholder="{{ __('messages.full_name_placeholder') }}" required autofocus>
                 </div>
                 <div class="form-group">
                     <label for="email">{{ __('messages.email') }}</label>
-                    <input type="email" id="email" name="email" class="form-control" value="{{ old('email') }}" placeholder="you@example.com" required>
+                    <input type="email" id="email" name="email" class="form-control" value="{{ old('email') }}" placeholder="{{ __('messages.email_placeholder') }}" required>
                 </div>
                 <div class="form-group">
                     <label for="password">{{ __('messages.password') }}</label>

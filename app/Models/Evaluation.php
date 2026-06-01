@@ -57,46 +57,77 @@ class Evaluation extends Model
     {
         if ($type === 'peer') {
             return [
-                'collaboration' => 'Collaboration & Communication — Clarity and responsiveness in meetings, messaging, and documents',
-                'reliability' => 'Reliability — Delivers committed work on time and at promised quality',
-                'contribution' => 'Contribution — Tangible contribution to shared tasks and team projects',
-                'job_skills' => 'Job Skills (Observable) — Level of role-specific skill observed while working together',
-                'positive_influence' => 'Positive Influence — Effect on team morale; willingness to help others',
+                'collaboration' => __('messages.eval_rating_collaboration'),
+                'reliability' => __('messages.eval_rating_reliability'),
+                'contribution' => __('messages.eval_rating_contribution'),
+                'job_skills' => __('messages.eval_rating_job_skills'),
+                'positive_influence' => __('messages.eval_rating_positive_influence'),
             ];
         }
 
         if ($type === 'manager') {
             $roleItems = match ($internRole) {
                 'senior_programmer' => [
-                    'technical_expertise' => ['Technical Expertise — Architecture design, code quality, fluency with libraries and tools', 15],
-                    'problem_solving' => ['Problem Solving — Ability to analyze and resolve complex bugs and technical issues', 15],
-                    'code_review_mentoring' => ['Code Review & Mentoring — Reviews others\' code; guides the mid-level intern', 15],
-                    'deliverable_quality' => ['Deliverable Quality — Test coverage, documentation, maintainability', 15],
+                    'technical_expertise' => [__('messages.eval_rating_technical_expertise'), 15],
+                    'problem_solving' => [__('messages.eval_rating_problem_solving'), 15],
+                    'code_review_mentoring' => [__('messages.eval_rating_code_review_mentoring'), 15],
+                    'deliverable_quality' => [__('messages.eval_rating_deliverable_quality'), 15],
                 ],
                 'mid_programmer' => [
-                    'core_technical_skills' => ['Core Technical Skills — Proficiency in assigned languages/frameworks; ability to write working code', 15],
-                    'learning_speed' => ['Learning Speed — Speed of picking up new technologies and codebases', 15],
-                    'requirement_understanding' => ['Requirement Understanding & Implementation — Accurately interprets and translates requirements into code', 15],
-                    'output_quality' => ['Output Quality — Code readability, basic testing, bug frequency', 15],
+                    'core_technical_skills' => [__('messages.eval_rating_core_technical_skills'), 15],
+                    'learning_speed' => [__('messages.eval_rating_learning_speed'), 15],
+                    'requirement_understanding' => [__('messages.eval_rating_requirement_understanding'), 15],
+                    'output_quality' => [__('messages.eval_rating_output_quality'), 15],
                 ],
                 'translator' => [
-                    'translation_accuracy' => ['Translation/Interpretation Accuracy — Faithfully conveys meaning and nuance; frequency of errors', 15],
-                    'technical_terminology' => ['Technical Terminology — Appropriate handling of domain-specific terms; consistency', 15],
-                    'cultural_awareness' => ['Cultural & Contextual Awareness — Bridges cultural differences; quality of mediation', 15],
-                    'speed_realtime' => ['Speed & Real-time Performance — Throughput on documents/meetings; stability during live interpretation', 15],
+                    'translation_accuracy' => [__('messages.eval_rating_translation_accuracy'), 15],
+                    'technical_terminology' => [__('messages.eval_rating_technical_terminology'), 15],
+                    'cultural_awareness' => [__('messages.eval_rating_cultural_awareness'), 15],
+                    'speed_realtime' => [__('messages.eval_rating_speed_realtime'), 15],
                 ],
                 default => [],
             };
             $commonItems = [
-                'reliability_diligence' => ['Reliability & Diligence — Meets deadlines, attendance, completion of committed deliverables', 10],
-                'collaboration_communication' => ['Collaboration & Communication — Communication, information sharing, conflict handling', 10],
-                'learning_growth' => ['Learning & Growth — Receptiveness to feedback, self-directed learning, growth over the period', 10],
-                'cultural_fit' => ['Cultural Fit — Alignment with team values and culture; long-term retention potential', 10],
+                'reliability_diligence' => [__('messages.eval_rating_reliability_diligence'), 10],
+                'collaboration_communication' => [__('messages.eval_rating_collaboration_communication'), 10],
+                'learning_growth' => [__('messages.eval_rating_learning_growth'), 10],
+                'cultural_fit' => [__('messages.eval_rating_cultural_fit'), 10],
             ];
             return $roleItems + $commonItems;
         }
 
         return [];
+    }
+
+    public static function frequencyLabels(): array
+    {
+        return [
+            'daily' => __('messages.eval_frequency_daily'),
+            '2-3x_week' => __('messages.eval_frequency_2_3x_week'),
+            'weekly' => __('messages.eval_frequency_weekly'),
+            'rarely' => __('messages.eval_frequency_rarely'),
+        ];
+    }
+
+    public static function rehireRecommendationLabels(): array
+    {
+        return [
+            'strongly_recommend' => __('messages.eval_rehire_strongly_recommend'),
+            'recommend' => __('messages.eval_rehire_recommend'),
+            'conditional' => __('messages.eval_rehire_conditional'),
+            'do_not_recommend' => __('messages.eval_rehire_do_not_recommend'),
+        ];
+    }
+
+    public static function salaryIncreaseLabels(): array
+    {
+        return [
+            '0' => __('messages.eval_salary_0'),
+            'under_5' => __('messages.eval_salary_under_5'),
+            '5_10' => __('messages.eval_salary_5_10'),
+            '10_15' => __('messages.eval_salary_10_15'),
+            'over_15' => __('messages.eval_salary_over_15'),
+        ];
     }
 
     public function weightedScore(): ?float

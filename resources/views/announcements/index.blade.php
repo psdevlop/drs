@@ -41,7 +41,7 @@
                 </div>
                 <div class="announcement-meta">
                     <span>{{ $announcement->user->name }}</span>
-                    <span class="announcement-date">{{ $announcement->created_at->format('M d, Y H:i') }}</span>
+                    <span class="announcement-date">{{ $announcement->created_at->translatedFormat(__('messages.date_time_format_medium')) }}</span>
                 </div>
             </div>
             <div class="announcement-excerpt">{!! \App\Support\TextFormatter::linkifyUrls(Str::limit($announcement->content, 200), true) !!}</div>

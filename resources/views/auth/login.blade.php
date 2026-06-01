@@ -33,7 +33,7 @@
                 @csrf
                 <div class="form-group">
                     <label for="email">{{ __('messages.email') }}</label>
-                    <input type="email" id="email" name="email" class="form-control" value="{{ old('email') }}" placeholder="you@example.com" required autofocus>
+                    <input type="email" id="email" name="email" class="form-control" value="{{ old('email') }}" placeholder="{{ __('messages.email_placeholder') }}" required autofocus>
                 </div>
                 <div class="form-group">
                     <label for="password">{{ __('messages.password') }}</label>

@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', ($mode ?? 'create') === 'edit' ? 'Edit Self-Assessment' : 'Self-Assessment')
+@section('title', ($mode ?? 'create') === 'edit' ? __('messages.edit_self_assessment') : __('messages.self_assessment'))
 @section('content')
 @php
     $isEdit = ($mode ?? 'create') === 'edit';
@@ -7,12 +7,12 @@
     $r = $evaluation?->responses ?? [];
 @endphp
 <div class="page-header">
-    <h1>{{ $isEdit ? 'Edit Self-Assessment' : 'Self-Assessment' }}</h1>
-    <a href="{{ route('evaluations.index') }}" class="btn btn-outline">Back</a>
+    <h1>{{ $isEdit ? __('messages.edit_self_assessment') : __('messages.self_assessment') }}</h1>
+    <a href="{{ route('evaluations.index') }}" class="btn btn-outline">{{ __('messages.back') }}</a>
 </div>
 
 <div class="card">
-    <p class="text-muted">This assessment is meant to gauge your self-awareness and growth mindset, not to grade you. Honest answers will lead to more useful feedback.</p>
+    <p class="text-muted">{{ __('messages.eval_self_desc') }}</p>
 
     @include('evaluations.partials.score-picker-assets')
 
@@ -21,21 +21,21 @@
         @if($isEdit) @method('PUT') @endif
 
         <div class="form-group">
-            <label>Name</label>
+            <label>{{ __('messages.name') }}</label>
             <input type="text" class="form-control" value="{{ $user->name }}" disabled>
         </div>
         <div class="form-group">
-            <label>Role</label>
+            <label>{{ __('messages.role') }}</label>
             <input type="text" class="form-control" value="{{ $user->internRoleLabel() }}" disabled>
         </div>
         <div class="form-group">
-            <label>Date</label>
+            <label>{{ __('messages.date') }}</label>
             <input type="text" class="form-control" value="{{ now()->format('Y-m-d') }}" disabled>
         </div>
 
         <div class="form-group">
-            <label for="self_score">Self-Score (1.0 - 5.0)</label>
-            <div class="text-muted text-xs">5 = Outstanding · 4 = Exceeds · 3 = Meets · 2 = Below · 1 = Poor</div>
+            <label for="self_score">{{ __('messages.self_score') }} (1.0 - 5.0)</label>
+            <div class="text-muted text-xs">{{ __('messages.score_scale_hint') }}</div>
             @include('evaluations.partials.score-picker', [
                 'name' => 'self_score',
                 'value' => old('self_score', $evaluation?->self_score),
@@ -45,39 +45,39 @@
         </div>
 
         <div class="form-group">
-            <label for="accomplishments">Q1. What are 1-3 accomplishments you are most proud of?</label>
-            <div class="text-muted text-xs">What did you do, how did you do it, and what changed as a result?</div>
+            <label for="accomplishments">{{ __('messages.eval_q_accomplishments') }}</label>
+            <div class="text-muted text-xs">{{ __('messages.eval_q_accomplishments_hint') }}</div>
             <textarea id="accomplishments" name="accomplishments" class="form-control" rows="4" required>{{ old('accomplishments', $r['accomplishments'] ?? '') }}</textarea>
             @error('accomplishments') <div class="error-text">{{ $message }}</div> @enderror
         </div>
 
         <div class="form-group">
-            <label for="challenge">Q2. What was the most difficult challenge, and how did you handle it?</label>
+            <label for="challenge">{{ __('messages.eval_q_challenge') }}</label>
             <textarea id="challenge" name="challenge" class="form-control" rows="4" required>{{ old('challenge', $r['challenge'] ?? '') }}</textarea>
             @error('challenge') <div class="error-text">{{ $message }}</div> @enderror
         </div>
 
         <div class="form-group">
-            <label for="growth">Q3. Growth — which skill grew the most compared to your start?</label>
+            <label for="growth">{{ __('messages.eval_q_growth') }}</label>
             <textarea id="growth" name="growth" class="form-control" rows="3" required>{{ old('growth', $r['growth'] ?? '') }}</textarea>
             @error('growth') <div class="error-text">{{ $message }}</div> @enderror
         </div>
 
         <div class="form-group">
-            <label for="improvement_plan">Q4. What areas do you most want to improve, with a specific plan?</label>
+            <label for="improvement_plan">{{ __('messages.eval_q_improvement_plan') }}</label>
             <textarea id="improvement_plan" name="improvement_plan" class="form-control" rows="3" required>{{ old('improvement_plan', $r['improvement_plan'] ?? '') }}</textarea>
             @error('improvement_plan') <div class="error-text">{{ $message }}</div> @enderror
         </div>
 
         <div class="form-group">
-            <label for="future_contribution">Q5. If converted to full-time, what value would you bring to the team?</label>
+            <label for="future_contribution">{{ __('messages.eval_q_future_contribution') }}</label>
             <textarea id="future_contribution" name="future_contribution" class="form-control" rows="3" required>{{ old('future_contribution', $r['future_contribution'] ?? '') }}</textarea>
             @error('future_contribution') <div class="error-text">{{ $message }}</div> @enderror
         </div>
 
         <div class="actions">
-            <button type="submit" class="btn btn-success">{{ $isEdit ? 'Save Changes' : 'Submit Self-Assessment' }}</button>
-            <a href="{{ route('evaluations.index') }}" class="btn btn-outline">Cancel</a>
+            <button type="submit" class="btn btn-success">{{ $isEdit ? __('messages.save_changes') : __('messages.submit_self_assessment') }}</button>
+            <a href="{{ route('evaluations.index') }}" class="btn btn-outline">{{ __('messages.cancel') }}</a>
         </div>
     </form>
 </div>

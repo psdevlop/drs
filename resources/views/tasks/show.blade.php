@@ -70,22 +70,22 @@
 
         <div class="detail-row">
             <div class="detail-label">{{ __('messages.expected_end_date') }}</div>
-            <div class="detail-value">{{ $task->expected_end_date?->format('M d, Y') ?? '-' }}</div>
+            <div class="detail-value">{{ $task->expected_end_date?->translatedFormat(__('messages.date_format_medium')) ?? '-' }}</div>
         </div>
 
         <div class="detail-row">
             <div class="detail-label">{{ __('messages.start_date') }}</div>
-            <div class="detail-value">{{ $task->start_date?->format('M d, Y') ?? '-' }}</div>
+            <div class="detail-value">{{ $task->start_date?->translatedFormat(__('messages.date_format_medium')) ?? '-' }}</div>
         </div>
 
         <div class="detail-row">
             <div class="detail-label">{{ __('messages.due_date') }}</div>
-            <div class="detail-value">{{ $task->due_date?->format('M d, Y') ?? '-' }}</div>
+            <div class="detail-value">{{ $task->due_date?->translatedFormat(__('messages.date_format_medium')) ?? '-' }}</div>
         </div>
 
         <div class="detail-row">
             <div class="detail-label">{{ __('messages.created_at') }}</div>
-            <div class="detail-value">{{ $task->created_at->format('M d, Y h:i A') }}</div>
+            <div class="detail-value">{{ $task->created_at->translatedFormat(__('messages.date_time_format_medium')) }}</div>
         </div>
     </div>
 </div>

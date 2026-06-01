@@ -4,7 +4,7 @@
 <div class="welcome-banner card">
     <div>
         <h2>{{ __('messages.welcome_back', ['name' => auth()->user()->name]) }}</h2>
-        <p class="welcome-subtitle">{{ now()->format('l, M d, Y') }} &mdash; {{ __('messages.have_productive_day') }}</p>
+        <p class="welcome-subtitle">{{ now()->translatedFormat('l, ' . __('messages.date_format_medium')) }} &mdash; {{ __('messages.have_productive_day') }}</p>
     </div>
     <div class="welcome-actions">
         <a href="{{ route('schedule') }}" class="btn btn-outline schedule-btn" title="{{ __('messages.schedule_management') }}">
@@ -25,10 +25,10 @@
                 <span>{{ __('messages.not_checked_in_today') }}</span>
             @elseif($todayAttendance->isCheckedIn())
                 <span class="attendance-status-dot status-checked-in"></span>
-                <span>{{ __('messages.checked_in_at') }} <strong>{{ $todayAttendance->check_in->format('h:i A') }}</strong></span>
+                <span>{{ __('messages.checked_in_at') }} <strong>{{ $todayAttendance->check_in->translatedFormat(__('messages.time_format_short')) }}</strong></span>
             @else
                 <span class="attendance-status-dot status-completed"></span>
-                <span>{{ __('messages.todays_attendance_complete') }} &mdash; {{ $todayAttendance->check_in->format('h:i A') }} ~ {{ $todayAttendance->check_out->format('h:i A') }} <strong>({{ $todayAttendance->formattedHours() }})</strong></span>
+                <span>{{ __('messages.todays_attendance_complete') }} &mdash; {{ $todayAttendance->check_in->translatedFormat(__('messages.time_format_short')) }} ~ {{ $todayAttendance->check_out->translatedFormat(__('messages.time_format_short')) }} <strong>({{ $todayAttendance->formattedHours() }})</strong></span>
             @endif
         </div>
         <div class="attendance-widget-actions">
@@ -93,7 +93,7 @@
                 </div>
                 <div class="announcement-meta-sm">
                     <span>{{ $announcement->user->name }}</span>
-                    <span>{{ $announcement->created_at->format('M d') }}</span>
+                    <span>{{ $announcement->created_at->translatedFormat(__('messages.date_format_short')) }}</span>
                 </div>
             </div>
         </a>
@@ -143,7 +143,7 @@
         @forelse($recentReports as $report)
             <div class="list-item list-item-row">
                 <div>
-                    <div class="text-bold">{{ $report->report_date->format('M d, Y') }}@if(auth()->user()->isAdmin() && $report->user_id !== auth()->id()) <span class="list-item-report-author">- {{ $report->user->name }}</span>@endif</div>
+                    <div class="text-bold">{{ $report->report_date->translatedFormat(__('messages.date_format_medium')) }}@if(auth()->user()->isAdmin() && $report->user_id !== auth()->id()) <span class="list-item-report-author">- {{ $report->user->name }}</span>@endif</div>
                     <div class="text-muted text-sm">{{ Str::limit($report->summary, 50) }}</div>
                     @if($report->task)
                         <div class="list-item-task-link">{{ $report->task->title }}</div>

@@ -43,14 +43,28 @@ class User extends Authenticatable
         'team_member' => 'Team Member',
     ];
 
+    public static function internRoleLabels(): array
+    {
+        return collect(array_keys(self::INTERN_ROLES))
+            ->mapWithKeys(fn (string $role) => [$role => __('messages.intern_role_' . $role)])
+            ->all();
+    }
+
+    public static function teamRoleLabels(): array
+    {
+        return collect(array_keys(self::TEAM_ROLES))
+            ->mapWithKeys(fn (string $role) => [$role => __('messages.team_role_' . $role)])
+            ->all();
+    }
+
     public function internRoleLabel(): ?string
     {
-        return self::INTERN_ROLES[$this->intern_role] ?? null;
+        return self::internRoleLabels()[$this->intern_role] ?? null;
     }
 
     public function teamRoleLabel(): ?string
     {
-        return self::TEAM_ROLES[$this->team_role] ?? null;
+        return self::teamRoleLabels()[$this->team_role] ?? null;
     }
 
     public function isDirector(): bool

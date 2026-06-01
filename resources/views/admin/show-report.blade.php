@@ -2,7 +2,7 @@
 @section('title', __('messages.view_report'))
 @section('content')
 <div class="page-header">
-    <h1>{{ $report->user->name }} - {{ $report->report_date->format('M d, Y (l)') }}</h1>
+    <h1>{{ $report->user->name }} - {{ $report->report_date->translatedFormat(__('messages.date_format_with_weekday')) }}</h1>
     <a href="{{ route('admin.dashboard') }}" class="btn btn-outline">{{ __('messages.back_to_admin') }}</a>
 </div>
 

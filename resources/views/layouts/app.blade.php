@@ -12,7 +12,7 @@
     <nav class="navbar">
         <div class="navbar-top">
             <a href="{{ route('dashboard') }}" class="navbar-brand"><span class="brand-daily">Daily</span><span class="brand-pulse">Pulse</span></a>
-            <button class="navbar-toggler" onclick="document.getElementById('navbarCollapse').classList.toggle('open')" aria-label="Toggle navigation">&#9776;</button>
+            <button class="navbar-toggler" onclick="document.getElementById('navbarCollapse').classList.toggle('open')" aria-label="{{ __('messages.toggle_navigation') }}">&#9776;</button>
         </div>
         <div class="navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav">
@@ -43,7 +43,7 @@
                     </ul>
                 </li>
                 <li><a href="{{ route('attendance.index') }}" class="{{ request()->routeIs('attendance.*') ? 'active' : '' }}">{{ __('messages.attendance') }}</a></li>
-                <li><a href="{{ route('evaluations.index') }}" class="{{ request()->routeIs('evaluations.*') ? 'active' : '' }}">Evaluations</a></li>
+                <li><a href="{{ route('evaluations.index') }}" class="{{ request()->routeIs('evaluations.*') ? 'active' : '' }}">{{ __('messages.evaluations') }}</a></li>
                 <li class="navbar-dropdown">
                     <a href="{{ route('oncall.index') }}" class="{{ request()->routeIs('oncall.*') || request()->routeIs('oncall.rotations*') ? 'active' : '' }}">{{ __('messages.on_call') }} <span class="caret">&#9662;</span></a>
                     <ul class="navbar-submenu">
@@ -209,7 +209,7 @@
             function showBrowserNotification(n) {
                 playNotificationSound();
                 if (Notification.permission !== 'granted') return;
-                var notif = new Notification(n.title || 'Notification', {
+                var notif = new Notification(n.title || '{{ __("messages.notifications") }}', {
                     body: n.message || '',
                     tag: 'drs-notif-' + n.id,
                 });

@@ -31,20 +31,20 @@
             @error('role') <div class="error-text">{{ $message }}</div> @enderror
         </div>
         <div class="form-group">
-            <label for="team_role">Team Role <small class="text-muted">(adds user to evaluation cohort)</small></label>
+            <label for="team_role">{{ __('messages.team_role') }} <small class="text-muted">({{ __('messages.team_role_hint') }})</small></label>
             <select id="team_role" name="team_role" class="form-control">
-                <option value="">— Not in cohort —</option>
-                @foreach(\App\Models\User::TEAM_ROLES as $val => $label)
+                <option value="">{{ __('messages.not_in_cohort') }}</option>
+                @foreach(\App\Models\User::teamRoleLabels() as $val => $label)
                     <option value="{{ $val }}" {{ old('team_role') == $val ? 'selected' : '' }}>{{ $label }}</option>
                 @endforeach
             </select>
             @error('team_role') <div class="error-text">{{ $message }}</div> @enderror
         </div>
         <div class="form-group">
-            <label for="intern_role">Position <small class="text-muted">(used to choose role-specific manager rating items)</small></label>
+            <label for="intern_role">{{ __('messages.position') }} <small class="text-muted">({{ __('messages.position_hint') }})</small></label>
             <select id="intern_role" name="intern_role" class="form-control">
-                <option value="">— None —</option>
-                @foreach(\App\Models\User::INTERN_ROLES as $val => $label)
+                <option value="">{{ __('messages.none') }}</option>
+                @foreach(\App\Models\User::internRoleLabels() as $val => $label)
                     <option value="{{ $val }}" {{ old('intern_role') == $val ? 'selected' : '' }}>{{ $label }}</option>
                 @endforeach
             </select>

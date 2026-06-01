@@ -42,6 +42,37 @@ class OnCallController extends Controller
                 }
             }
 
+            // Off-day (Saturday / government holiday): no duty users from working-day rotation,
+            // but we still want a PIC editable here. Show only the rotating on-call user as
+            // the duty badge; expose the full rotation list via pic_candidates so the dropdown
+            // can offer alternatives.
+            $dayData['pic_candidates'] = $dayData['users'];
+            if (empty($dayData['users'])) {
+                $seenCandidateIds = [];
+                foreach ($activeRotations as $rotation) {
+                    $onCallUser = $rotation->getOnCallUserForDate($date);
+                    if ($onCallUser && empty($dayData['users'])) {
+                        $dayData['users'][] = [
+                            'id' => $onCallUser->id,
+                            'name' => $onCallUser->name,
+                            'is_pic' => true,
+                        ];
+                        $dayData['pic'] = $onCallUser->name;
+                        $dayData['pic_user_id'] = $onCallUser->id;
+                    }
+                    foreach ($rotation->users as $user) {
+                        if (isset($seenCandidateIds[$user->id])) {
+                            continue;
+                        }
+                        $seenCandidateIds[$user->id] = true;
+                        $dayData['pic_candidates'][] = [
+                            'id' => $user->id,
+                            'name' => $user->name,
+                        ];
+                    }
+                }
+            }
+
             // Set auto PIC id from rotation
             foreach ($dayData['users'] as $u) {
                 if ($u['is_pic']) {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attendance;
 use App\Models\DailyReport;
 use Carbon\Carbon;
 use App\Models\OnCall;
@@ -24,23 +25,18 @@ class CalendarController extends Controller
 
     public function scheduleData(Request $request)
     {
+        @ini_set('memory_limit', '512M');
         $user = auth()->user();
         $userId = $user->id;
         $events = [];
 
-        // Tasks
+        // Tasks — visible to all users so the schedule view is shared
         $taskQuery = Task::with(['assignees', 'user'])
             ->where(function ($q) {
                 $q->whereNotNull('start_date')
                   ->orWhereNotNull('due_date')
                   ->orWhereNotNull('expected_end_date');
             });
-        if (!$user->isAdmin()) {
-            $taskQuery->where(function ($q) use ($userId) {
-                $q->where('user_id', $userId)
-                  ->orWhereHas('assignees', fn ($q2) => $q2->where('users.id', $userId));
-            });
-        }
 
         if ($request->filled('start') && $request->filled('end')) {
             $start = $request->start;
@@ -73,27 +69,25 @@ class CalendarController extends Controller
                 'borderColor' => $color['border'],
                 'extendedProps' => [
                     'type' => 'task',
-                    'status' => $task->status,
-                    'priority' => $task->priority,
+                    'status_key' => $task->status,
+                    'status' => __('messages.' . $task->status),
+                    'priority' => __('messages.' . $task->priority),
                     'progress' => $task->progress,
                     'assignee' => $task->assignees->pluck('name')->join(', ') ?: '-',
-                    'start_date' => $task->start_date?->format('M d, Y') ?? '-',
-                    'end_date' => $task->expected_end_date?->format('M d, Y') ?? $task->due_date?->format('M d, Y') ?? '-',
+                    'start_date' => $task->start_date?->translatedFormat(__('messages.date_format_medium')) ?? '-',
+                    'end_date' => $task->expected_end_date?->translatedFormat(__('messages.date_format_medium')) ?? $task->due_date?->translatedFormat(__('messages.date_format_medium')) ?? '-',
                 ],
             ];
         }
 
-        // Reports
+        // Reports — visible to all users so the schedule view is shared
         $reportQuery = DailyReport::with(['user', 'task']);
-        if (!$user->isAdmin()) {
-            $reportQuery->where('user_id', $userId);
-        }
         if ($request->filled('start') && $request->filled('end')) {
             $reportQuery->whereBetween('report_date', [$request->start, $request->end]);
         }
 
         foreach ($reportQuery->get() as $report) {
-            $title = $user->isAdmin() && $report->user_id !== $userId
+            $title = $report->user_id !== $userId
                 ? $report->user->name . ': ' . Str::limit($report->summary, 30)
                 : Str::limit($report->summary, 40);
 
@@ -106,7 +100,7 @@ class CalendarController extends Controller
                 'borderColor' => '#7c3aed',
                 'extendedProps' => [
                     'type' => 'report',
-                    'report_date' => $report->report_date->format('M d, Y'),
+                    'report_date' => $report->report_date->translatedFormat(__('messages.date_format_medium')),
                     'summary' => $report->summary,
                     'task' => $report->task?->title ?? '-',
                     'challenges' => $report->challenges ?? '-',
@@ -114,61 +108,120 @@ class CalendarController extends Controller
             ];
         }
 
-        // On Call (from rotation schedules)
-        $activeRotations = \App\Models\OnCallRotation::with('users')->where('is_active', true)->get();
-        if ($activeRotations->isNotEmpty() && $request->filled('start') && $request->filled('end')) {
-            $onCallStart = Carbon::parse($request->start);
-            $onCallEnd = Carbon::parse($request->end);
+        // On Duty (Sun-Fri working days) from attendance check-ins
+        // On Call (Sat or government holiday) from active rotation rosters
+        if ($request->filled('start') && $request->filled('end')) {
+            $rangeStart = Carbon::parse($request->start);
+            $rangeEnd = Carbon::parse($request->end);
+            $rangeStartKey = $rangeStart->format('Y-m-d');
+            $rangeEndKey = $rangeEnd->format('Y-m-d');
 
-            for ($date = $onCallStart->copy(); $date->lte($onCallEnd); $date->addDay()) {
-                $dutyUsers = collect();
-                $picName = null;
+            $holidayDates = array_flip(array_column(Setting::getScheduleHolidayDates(), 'date'));
 
-                foreach ($activeRotations as $rotation) {
-                    $users = $rotation->getUsersForDate($date);
-                    foreach ($users as $u) {
-                        $dutyUsers->push($u);
-                        if ($u->is_pic ?? false) {
-                            $picName = $u->name;
+            $attendancesByDate = Attendance::with('user')
+                ->whereBetween('date', [$rangeStartKey, $rangeEndKey])
+                ->whereNotNull('check_in')
+                ->get()
+                ->groupBy(fn ($a) => $a->date->format('Y-m-d'));
+
+            $activeRotations = \App\Models\OnCallRotation::with('users')->where('is_active', true)->get();
+
+            for ($date = $rangeStart->copy(); $date->lte($rangeEnd); $date->addDay()) {
+                $dateKey = $date->format('Y-m-d');
+                $isOnCallDay = $date->dayOfWeek === Carbon::SATURDAY || isset($holidayDates[$dateKey]);
+
+                if ($isOnCallDay) {
+                    if ($activeRotations->isEmpty()) {
+                        continue;
+                    }
+
+                    $picUser = null;
+                    foreach ($activeRotations as $rotation) {
+                        $picUser = $rotation->getOnCallUserForDate($date);
+                        if ($picUser) {
+                            break;
                         }
                     }
-                }
 
-                // Check for manual PIC override
-                $manualEntry = OnCall::with('pic')->where('date', $date->format('Y-m-d'))->first();
-                if ($manualEntry && $manualEntry->pic) {
-                    $picName = $manualEntry->pic->name;
-                }
+                    $manualEntry = OnCall::with('pic')->where('date', $dateKey)->first();
+                    if ($manualEntry && $manualEntry->pic) {
+                        $picUser = $manualEntry->pic;
+                    }
 
-                if ($dutyUsers->isEmpty()) {
-                    continue;
-                }
+                    if (!$picUser) {
+                        continue;
+                    }
 
-                $userNames = $dutyUsers->pluck('name')->unique()->join(', ');
-                $title = '📞 ' . __('messages.on_call') . ': ' . $userNames;
-                if ($picName) {
-                    $title .= ' (PIC: ' . $picName . ')';
-                }
+                    $userNames = $picUser->name;
+                    $title = '📞 ' . __('messages.on_call') . ': ' . $userNames;
 
-                $events[] = [
-                    'id' => 'oncall-' . $date->format('Y-m-d'),
-                    'title' => $title,
-                    'start' => $date->format('Y-m-d'),
-                    'url' => route('oncall.index'),
-                    'backgroundColor' => '#ef4444',
-                    'borderColor' => '#dc2626',
-                    'extendedProps' => [
-                        'type' => 'oncall',
-                        'users' => $userNames,
-                        'pic' => $picName ?? '-',
-                        'date' => $date->format('M d, Y'),
-                    ],
-                ];
+                    $events[] = [
+                        'id' => 'oncall-' . $dateKey,
+                        'title' => $title,
+                        'start' => $dateKey,
+                        'url' => route('oncall.index'),
+                        'backgroundColor' => '#ef4444',
+                        'borderColor' => '#dc2626',
+                        'extendedProps' => [
+                            'type' => 'oncall',
+                            'users' => $userNames,
+                            'pic' => $userNames,
+                            'date' => $date->translatedFormat(__('messages.date_format_medium')),
+                        ],
+                    ];
+                } else {
+                    $dayAttendances = $attendancesByDate->get($dateKey);
+                    if (!$dayAttendances || $dayAttendances->isEmpty()) {
+                        continue;
+                    }
+
+                    $userNames = $dayAttendances->pluck('user.name')->filter()->unique()->values()->join(', ');
+                    if ($userNames === '') {
+                        continue;
+                    }
+
+                    // Rotation PIC for the working day (cycles one user per working day)
+                    $picName = null;
+                    foreach ($activeRotations as $rotation) {
+                        foreach ($rotation->getUsersForDate($date) as $u) {
+                            if ($u->is_pic ?? false) {
+                                $picName = $u->name;
+                                break 2;
+                            }
+                        }
+                    }
+
+                    // Manual PIC override from on_calls table
+                    $manualEntry = OnCall::with('pic')->where('date', $dateKey)->first();
+                    if ($manualEntry && $manualEntry->pic) {
+                        $picName = $manualEntry->pic->name;
+                    }
+
+                    $title = '🛠️ ' . __('messages.on_duty') . ': ' . $userNames;
+                    if ($picName) {
+                        $title .= ' (' . __('messages.pic_short') . ': ' . $picName . ')';
+                    }
+
+                    $events[] = [
+                        'id' => 'onduty-' . $dateKey,
+                        'title' => $title,
+                        'start' => $dateKey,
+                        'url' => route('attendance.index'),
+                        'backgroundColor' => '#0ea5e9',
+                        'borderColor' => '#0284c7',
+                        'extendedProps' => [
+                            'type' => 'onduty',
+                            'users' => $userNames,
+                            'pic' => $picName ?? '-',
+                            'date' => $date->translatedFormat(__('messages.date_format_medium')),
+                        ],
+                    ];
+                }
             }
         }
 
         // Holidays (specific dates with optional reason)
-        foreach (Setting::getHolidayDates() as $holiday) {
+        foreach (Setting::getScheduleHolidayDates() as $holiday) {
             if (empty($holiday['date'])) {
                 continue;
             }
@@ -187,7 +240,7 @@ class CalendarController extends Controller
                 'borderColor' => '#db2777',
                 'extendedProps' => [
                     'type' => 'holiday',
-                    'date' => Carbon::parse($holiday['date'])->format('M d, Y'),
+                    'date' => Carbon::parse($holiday['date'])->translatedFormat(__('messages.date_format_medium')),
                     'reason' => $reason ?: '-',
                 ],
             ];
@@ -248,12 +301,12 @@ class CalendarController extends Controller
                 'backgroundColor' => $color['bg'],
                 'borderColor' => $color['border'],
                 'extendedProps' => [
-                    'status' => $task->status,
-                    'priority' => $task->priority,
+                    'status' => __('messages.' . $task->status),
+                    'priority' => __('messages.' . $task->priority),
                     'progress' => $task->progress,
                     'assignee' => $task->assignees->pluck('name')->join(', ') ?: '-',
-                    'start_date' => $task->start_date?->format('M d, Y') ?? '-',
-                    'end_date' => $task->expected_end_date?->format('M d, Y') ?? $task->due_date?->format('M d, Y') ?? '-',
+                    'start_date' => $task->start_date?->translatedFormat(__('messages.date_format_medium')) ?? '-',
+                    'end_date' => $task->expected_end_date?->translatedFormat(__('messages.date_format_medium')) ?? $task->due_date?->translatedFormat(__('messages.date_format_medium')) ?? '-',
                 ],
             ];
         }
@@ -294,7 +347,7 @@ class CalendarController extends Controller
                 'backgroundColor' => '#8b5cf6',
                 'borderColor' => '#7c3aed',
                 'extendedProps' => [
-                    'report_date' => $report->report_date->format('M d, Y'),
+                    'report_date' => $report->report_date->translatedFormat(__('messages.date_format_medium')),
                     'summary' => $report->summary,
                     'task' => $report->task?->title ?? '-',
                     'challenges' => $report->challenges ?? '-',

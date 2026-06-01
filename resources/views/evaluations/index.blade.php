@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Performance Evaluations')
+@section('title', __('messages.performance_evaluations'))
 @section('content')
 @php
     $isInCohort = in_array($me->team_role, ['director', 'team_manager', 'team_member'], true);
@@ -55,34 +55,34 @@
 </style>
 
 <div class="page-header">
-    <h1>Performance Evaluations</h1>
+    <h1>{{ __('messages.performance_evaluations') }}</h1>
     @if(auth()->user()->isAdmin())
-        <a href="{{ route('admin.evaluations.index') }}" class="btn btn-primary">View All Results</a>
+        <a href="{{ route('admin.evaluations.index') }}" class="btn btn-primary">{{ __('messages.view_all_results') }}</a>
     @endif
 </div>
 
 @if($isInCohort)
     <div class="eval-banner">
-        <div class="label">⚠ Please complete your evaluation forms by <strong>{{ $deadline->format('M j, Y') }}</strong>.</div>
-        <span class="badge-days">{{ $daysRemaining }} {{ $daysRemaining === 1 ? 'day' : 'days' }} left</span>
+        <div class="label">⚠ {{ __('messages.evaluation_deadline_notice', ['date' => $deadline->translatedFormat(__('messages.date_format_medium'))]) }}</div>
+        <span class="badge-days">{{ __('messages.days_left', ['count' => $daysRemaining]) }}</span>
     </div>
 @endif
 
 @if(!$isInCohort && !auth()->user()->isAdmin())
     <div class="card">
-        <p>You are not part of the current evaluation cohort. Please contact your administrator.</p>
+        <p>{{ __('messages.not_current_eval_cohort') }}</p>
     </div>
 @endif
 
 @php
     $renderStatus = function ($slot) {
         if ($slot['completed'] && $slot['evaluation']->isConfirmed()) {
-            return '<span class="eval-status confirmed"><span class="dot"></span>Confirmed</span>';
+            return '<span class="eval-status confirmed"><span class="dot"></span>' . e(__('messages.eval_status_confirmed')) . '</span>';
         }
         if ($slot['completed']) {
-            return '<span class="eval-status done"><span class="dot"></span>Submitted</span>';
+            return '<span class="eval-status done"><span class="dot"></span>' . e(__('messages.eval_status_submitted')) . '</span>';
         }
-        return '<span class="eval-status pending"><span class="dot"></span>Pending</span>';
+        return '<span class="eval-status pending"><span class="dot"></span>' . e(__('messages.eval_status_pending')) . '</span>';
     };
 @endphp
 
@@ -96,14 +96,14 @@
         <div class="title-block">
             <span class="num s1">1</span>
             <div>
-                <h3>Superior Reviews — Subordinate Evaluations</h3>
-                <div class="desc">As a superior, evaluate the team members who report to you. This carries 50% weight in the composite score.</div>
+                <h3>{{ __('messages.superior_reviews') }}</h3>
+                <div class="desc">{{ __('messages.superior_reviews_desc') }}</div>
             </div>
         </div>
-        <div class="progress-pill">@if($superiorMine->count()){{ $superiorDone }} / {{ $superiorMine->count() }} complete @else view only @endif</div>
+        <div class="progress-pill">@if($superiorMine->count()){{ $superiorDone }} / {{ $superiorMine->count() }} {{ __('messages.complete') }} @else {{ __('messages.view_only') }} @endif</div>
     </div>
     <table class="eval-table">
-        <thead><tr><th>Reviewer</th><th>Subject</th><th>Role</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>{{ __('messages.reviewer') }}</th><th>{{ __('messages.subject') }}</th><th>{{ __('messages.role') }}</th><th>{{ __('messages.status') }}</th><th></th></tr></thead>
         <tbody>
             @forelse($superiorSorted->groupBy(fn($s) => $s['evaluator']->id) as $group)
                 @php $reviewer = $group->first()['evaluator']; $count = $group->count(); @endphp
@@ -120,15 +120,15 @@
                         <td>{!! $renderStatus($slot) !!}</td>
                         <td>
                             @if($slot['is_mine'] && !$slot['completed'])
-                                <a href="{{ route('evaluations.create', ['manager', $slot['evaluee']]) }}" class="btn btn-sm btn-primary">Fill Out</a>
+                                <a href="{{ route('evaluations.create', ['manager', $slot['evaluee']]) }}" class="btn btn-sm btn-primary">{{ __('messages.fill_out') }}</a>
                             @elseif($slot['completed'] && ($slot['is_mine'] || auth()->user()->isAdmin() || auth()->user()->isDirector() || auth()->user()->isTeamManager()))
-                                <a href="{{ route('evaluations.show', $slot['evaluation']) }}" class="btn btn-sm btn-outline">View</a>
+                                <a href="{{ route('evaluations.show', $slot['evaluation']) }}" class="btn btn-sm btn-outline">{{ __('messages.view') }}</a>
                             @endif
                         </td>
                     </tr>
                 @endforeach
             @empty
-                <tr><td colspan="5" class="text-muted" style="padding:18px 22px;">No superior evaluations defined.</td></tr>
+                <tr><td colspan="5" class="text-muted" style="padding:18px 22px;">{{ __('messages.no_superior_evaluations_defined') }}</td></tr>
             @endforelse
         </tbody>
     </table>
@@ -144,30 +144,30 @@
         <div class="title-block">
             <span class="num s2">2</span>
             <div>
-                <h3>Self Assessment</h3>
-                <div class="desc">Reflect on your own work over the two-month internship period. This carries 20% weight in the composite score.</div>
+                <h3>{{ __('messages.self_assessment') }}</h3>
+                <div class="desc">{{ __('messages.self_assessment_desc') }}</div>
             </div>
         </div>
-        <div class="progress-pill">@if($selfMine->count()){{ $selfDone }} / {{ $selfMine->count() }} complete @else view only @endif</div>
+        <div class="progress-pill">@if($selfMine->count()){{ $selfDone }} / {{ $selfMine->count() }} {{ __('messages.complete') }} @else {{ __('messages.view_only') }} @endif</div>
     </div>
     <table class="eval-table">
-        <thead><tr><th>Person</th><th>Role</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>{{ __('messages.person') }}</th><th>{{ __('messages.role') }}</th><th>{{ __('messages.status') }}</th><th></th></tr></thead>
         <tbody>
             @forelse($selfSorted as $slot)
                 <tr>
                     <td><strong>{{ $slot['evaluator']->name }}</strong></td>
-                    <td>Self · {{ $slot['evaluator']->teamRoleLabel() }} @if($slot['evaluator']->internRoleLabel())<span class="text-muted text-xs"> · {{ $slot['evaluator']->internRoleLabel() }}</span>@endif</td>
+                    <td>{{ __('messages.self') }} · {{ $slot['evaluator']->teamRoleLabel() }} @if($slot['evaluator']->internRoleLabel())<span class="text-muted text-xs"> · {{ $slot['evaluator']->internRoleLabel() }}</span>@endif</td>
                     <td>{!! $renderStatus($slot) !!}</td>
                     <td>
                         @if($slot['is_mine'] && !$slot['completed'])
-                            <a href="{{ route('evaluations.create', ['self', $slot['evaluator']]) }}" class="btn btn-sm btn-primary">Fill Out</a>
+                            <a href="{{ route('evaluations.create', ['self', $slot['evaluator']]) }}" class="btn btn-sm btn-primary">{{ __('messages.fill_out') }}</a>
                         @elseif($slot['completed'] && ($slot['is_mine'] || auth()->user()->isAdmin() || auth()->user()->isDirector() || auth()->user()->isTeamManager()))
-                            <a href="{{ route('evaluations.show', $slot['evaluation']) }}" class="btn btn-sm btn-outline">View</a>
+                            <a href="{{ route('evaluations.show', $slot['evaluation']) }}" class="btn btn-sm btn-outline">{{ __('messages.view') }}</a>
                         @endif
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="4" class="text-muted" style="padding:18px 22px;">No self assessments defined.</td></tr>
+                <tr><td colspan="4" class="text-muted" style="padding:18px 22px;">{{ __('messages.no_self_assessments_defined') }}</td></tr>
             @endforelse
         </tbody>
     </table>
@@ -183,14 +183,14 @@
         <div class="title-block">
             <span class="num s3">3</span>
             <div>
-                <h3>Peer Reviews</h3>
-                <div class="desc">Evaluate the colleagues you work alongside. This carries 30% weight in the composite score. Behavioral examples matter more than scores.</div>
+                <h3>{{ __('messages.peer_reviews') }}</h3>
+                <div class="desc">{{ __('messages.peer_reviews_desc') }}</div>
             </div>
         </div>
-        <div class="progress-pill">@if($peerMine->count()){{ $peerDone }} / {{ $peerMine->count() }} complete @else view only @endif</div>
+        <div class="progress-pill">@if($peerMine->count()){{ $peerDone }} / {{ $peerMine->count() }} {{ __('messages.complete') }} @else {{ __('messages.view_only') }} @endif</div>
     </div>
     <table class="eval-table">
-        <thead><tr><th>Reviewer</th><th>Subject</th><th>Role</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>{{ __('messages.reviewer') }}</th><th>{{ __('messages.subject') }}</th><th>{{ __('messages.role') }}</th><th>{{ __('messages.status') }}</th><th></th></tr></thead>
         <tbody>
             @forelse($peerSorted->groupBy(fn($s) => $s['evaluator']->id) as $group)
                 @php $reviewer = $group->first()['evaluator']; $count = $group->count(); @endphp
@@ -207,15 +207,15 @@
                         <td>{!! $renderStatus($slot) !!}</td>
                         <td>
                             @if($slot['is_mine'] && !$slot['completed'])
-                                <a href="{{ route('evaluations.create', ['peer', $slot['evaluee']]) }}" class="btn btn-sm btn-primary">Fill Out</a>
+                                <a href="{{ route('evaluations.create', ['peer', $slot['evaluee']]) }}" class="btn btn-sm btn-primary">{{ __('messages.fill_out') }}</a>
                             @elseif($slot['completed'] && ($slot['is_mine'] || auth()->user()->isAdmin() || auth()->user()->isDirector() || auth()->user()->isTeamManager()))
-                                <a href="{{ route('evaluations.show', $slot['evaluation']) }}" class="btn btn-sm btn-outline">View</a>
+                                <a href="{{ route('evaluations.show', $slot['evaluation']) }}" class="btn btn-sm btn-outline">{{ __('messages.view') }}</a>
                             @endif
                         </td>
                     </tr>
                 @endforeach
             @empty
-                <tr><td colspan="5" class="text-muted" style="padding:18px 22px;">No peer reviews defined.</td></tr>
+                <tr><td colspan="5" class="text-muted" style="padding:18px 22px;">{{ __('messages.no_peer_reviews_defined') }}</td></tr>
             @endforelse
         </tbody>
     </table>
@@ -230,32 +230,32 @@
             <div class="title-block">
                 <span class="num s4">4</span>
                 <div>
-                    <h3>Results &amp; Statistics</h3>
-                    <div class="desc">Composite scores and grades become available once enough reviews are submitted. Restricted to managers and team leads.</div>
+                    <h3>{{ __('messages.results_statistics') }}</h3>
+                    <div class="desc">{{ __('messages.results_statistics_desc') }}</div>
                 </div>
             </div>
-            <div class="progress-pill">View only</div>
+            <div class="progress-pill">{{ __('messages.view_only') }}</div>
         </div>
         <div class="stat-grid">
             <div class="stat">
-                <div class="label">Total Forms</div>
+                <div class="label">{{ __('messages.total_forms') }}</div>
                 <div class="value">{{ $completedForms }} <small>/ {{ $totalForms }}</small></div>
-                <div class="sub">{{ max(0, $totalForms - $completedForms) }} forms remaining</div>
+                <div class="sub">{{ __('messages.forms_remaining', ['count' => max(0, $totalForms - $completedForms)]) }}</div>
             </div>
             <div class="stat">
-                <div class="label">Days Remaining</div>
+                <div class="label">{{ __('messages.days_remaining') }}</div>
                 <div class="value">{{ $daysRemaining }}</div>
-                <div class="sub">Until {{ $deadline->format('M j, Y') }}</div>
+                <div class="sub">{{ __('messages.until_date', ['date' => $deadline->translatedFormat(__('messages.date_format_medium'))]) }}</div>
             </div>
             <div class="stat">
-                <div class="label">Results Access</div>
+                <div class="label">{{ __('messages.results_access') }}</div>
                 <div class="value" style="color:{{ $canViewResults ? '#22c55e' : '#9ca3af' }}">{{ $canViewResults ? '✓' : '—' }}</div>
-                <div class="sub">{{ $canViewResults ? count($resultsSummary) . ' reports available' : 'Restricted' }}</div>
+                <div class="sub">{{ $canViewResults ? __('messages.reports_available', ['count' => count($resultsSummary)]) : __('messages.eval_status_restricted') }}</div>
             </div>
         </div>
         @if(!empty($resultsSummary))
             <table class="eval-table">
-                <thead><tr><th>Intern</th><th>Role</th><th>Status</th><th></th></tr></thead>
+                <thead><tr><th>{{ __('messages.intern') }}</th><th>{{ __('messages.role') }}</th><th>{{ __('messages.status') }}</th><th></th></tr></thead>
                 <tbody>
                     @foreach($resultsSummary as $row)
                         <tr>
@@ -263,9 +263,9 @@
                             <td>{{ $row['user']->teamRoleLabel() }} @if($row['user']->internRoleLabel())<span class="text-muted text-xs"> · {{ $row['user']->internRoleLabel() }}</span>@endif</td>
                             <td>
                                 @if($row['has_data'])
-                                    <span class="eval-status done"><span class="dot"></span>In progress</span>
+                                    <span class="eval-status done"><span class="dot"></span>{{ __('messages.eval_status_in_progress') }}</span>
                                 @else
-                                    <span class="eval-status pending"><span class="dot"></span>No data</span>
+                                    <span class="eval-status pending"><span class="dot"></span>{{ __('messages.eval_status_no_data') }}</span>
                                 @endif
                             </td>
                             <td>
@@ -273,9 +273,9 @@
                                     $canSee = auth()->user()->isAdmin() || auth()->user()->isDirector() || auth()->user()->isTeamManager() || auth()->id() === $row['user']->id;
                                 @endphp
                                 @if($canSee)
-                                    <a href="{{ route('evaluations.intern-report', $row['user']) }}" class="btn btn-sm btn-outline">View Report</a>
+                                    <a href="{{ route('evaluations.intern-report', $row['user']) }}" class="btn btn-sm btn-outline">{{ __('messages.view_report') }}</a>
                                 @else
-                                    <span class="btn btn-sm btn-outline" style="opacity:.5;cursor:not-allowed">View Report</span>
+                                    <span class="btn btn-sm btn-outline" style="opacity:.5;cursor:not-allowed">{{ __('messages.view_report') }}</span>
                                 @endif
                             </td>
                         </tr>

@@ -50,7 +50,7 @@
         @if($service->registration_date)
         <div class="detail-item">
             <div class="detail-label">{{ __('messages.registration_date') }}</div>
-            <div class="detail-value">{{ $service->registration_date->format('M d, Y') }}</div>
+            <div class="detail-value">{{ $service->registration_date->translatedFormat(__('messages.date_format_medium')) }}</div>
         </div>
         @endif
         @if($service->expiration_date)
@@ -58,7 +58,7 @@
             <div class="detail-label">{{ __('messages.expiration_date') }}</div>
             <div class="detail-value">
                 <span class="{{ $service->isExpired() ? 'text-danger' : ($service->isExpiringSoon() ? 'text-warning' : '') }}">
-                    {{ $service->expiration_date->format('M d, Y') }}
+                    {{ $service->expiration_date->translatedFormat(__('messages.date_format_medium')) }}
                 </span>
                 @if($service->isExpired())
                     <span class="text-danger text-sm">({{ __('messages.service_expired') }})</span>
@@ -114,7 +114,7 @@
         </div>
         <div class="detail-item">
             <div class="detail-label">{{ __('messages.created_at') }}</div>
-            <div class="detail-value">{{ $service->created_at->format('M d, Y H:i') }}</div>
+            <div class="detail-value">{{ $service->created_at->translatedFormat(__('messages.date_time_format_medium')) }}</div>
         </div>
     </div>
     @if($service->notes)

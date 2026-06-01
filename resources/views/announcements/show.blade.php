@@ -20,7 +20,7 @@
     </div>
     <div class="announcement-show-meta">
         <span>{{ __('messages.posted_by') }}: <strong>{{ $announcement->user->name }}</strong></span>
-        <span>{{ $announcement->created_at->format('M d, Y H:i') }}</span>
+        <span>{{ $announcement->created_at->translatedFormat(__('messages.date_time_format_medium')) }}</span>
         @if($announcement->updated_at->gt($announcement->created_at))
             <span>({{ __('messages.edited') }})</span>
         @endif

@@ -1,30 +1,33 @@
 @extends('layouts.app')
-@section('title', 'Evaluation')
+@section('title', __('messages.evaluation'))
 @section('content')
 @php
     $typeLabel = match($evaluation->type) {
-        'self' => 'Self-Assessment',
-        'peer' => 'Peer Review',
-        'manager' => 'Manager Evaluation',
+        'self' => __('messages.self_assessment'),
+        'peer' => __('messages.peer_review'),
+        'manager' => __('messages.manager_evaluation'),
     };
+    $frequencyLabels = \App\Models\Evaluation::frequencyLabels();
+    $rehireLabels = \App\Models\Evaluation::rehireRecommendationLabels();
+    $salaryLabels = \App\Models\Evaluation::salaryIncreaseLabels();
 @endphp
 <div class="page-header">
     <h1>{{ $typeLabel }} — {{ $evaluation->evaluee->name }}</h1>
     <div class="actions">
-        <a href="{{ url()->previous() }}" class="btn btn-outline">Back</a>
+        <a href="{{ url()->previous() }}" class="btn btn-outline">{{ __('messages.back') }}</a>
         @if($evaluation->evaluator_id === auth()->id() || auth()->user()->isSuperAdmin())
-            <a href="{{ route('evaluations.edit', $evaluation) }}" class="btn btn-primary">Edit</a>
+            <a href="{{ route('evaluations.edit', $evaluation) }}" class="btn btn-primary">{{ __('messages.edit') }}</a>
         @endif
         @if(auth()->user()->isAdmin() && !$evaluation->isConfirmed())
             <form method="POST" action="{{ route('evaluations.confirm', $evaluation) }}" style="display:inline">
                 @csrf
-                <button type="submit" class="btn btn-success">Confirm</button>
+                <button type="submit" class="btn btn-success">{{ __('messages.confirm') }}</button>
             </form>
         @endif
         @if($evaluation->evaluator_id === auth()->id() || auth()->user()->isAdmin())
-            <form method="POST" action="{{ route('evaluations.destroy', $evaluation) }}" style="display:inline" onsubmit="return confirm('Delete this evaluation? This cannot be undone.');">
+            <form method="POST" action="{{ route('evaluations.destroy', $evaluation) }}" style="display:inline" onsubmit="return confirm('{{ __('messages.delete_evaluation_confirm') }}');">
                 @csrf @method('DELETE')
-                <button type="submit" class="btn btn-danger">Delete</button>
+                <button type="submit" class="btn btn-danger">{{ __('messages.delete') }}</button>
             </form>
         @endif
     </div>
@@ -32,29 +35,29 @@
 
 @if($evaluation->isConfirmed())
     <div class="alert alert-info" style="background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe;padding:10px 14px;border-radius:8px;margin-bottom:14px;">
-        ✓ Confirmed by <strong>{{ $evaluation->confirmedBy->name ?? 'Admin' }}</strong> on {{ $evaluation->confirmed_at->format('Y-m-d H:i') }}
+        ✓ {{ __('messages.confirmed_by_on', ['name' => $evaluation->confirmedBy->name ?? __('messages.admin'), 'date' => $evaluation->confirmed_at->format('Y-m-d H:i')]) }}
     </div>
 @endif
 
 <div class="card">
     <div class="table-wrapper">
         <table>
-            <tr><th style="width:200px;">Evaluator</th><td>{{ $evaluation->evaluator->name }}</td></tr>
-            <tr><th>Evaluee</th><td>{{ $evaluation->evaluee->name }} ({{ $evaluation->evaluee->internRoleLabel() }})</td></tr>
-            <tr><th>Submitted</th><td>{{ $evaluation->submitted_at?->format('Y-m-d H:i') }}</td></tr>
+            <tr><th style="width:200px;">{{ __('messages.evaluator') }}</th><td>{{ $evaluation->evaluator->name }}</td></tr>
+            <tr><th>{{ __('messages.evaluee') }}</th><td>{{ $evaluation->evaluee->name }} ({{ $evaluation->evaluee->internRoleLabel() }})</td></tr>
+            <tr><th>{{ __('messages.submitted') }}</th><td>{{ $evaluation->submitted_at?->format('Y-m-d H:i') }}</td></tr>
             @if($evaluation->type === 'self')
-                <tr><th>Self-Score</th><td><strong>{{ $evaluation->self_score }}</strong> / 5</td></tr>
+                <tr><th>{{ __('messages.self_score') }}</th><td><strong>{{ $evaluation->self_score }}</strong> / 5</td></tr>
             @endif
             @if($evaluation->type === 'peer')
-                <tr><th>Frequency of Collaboration</th><td>{{ str_replace('_', ' ', $evaluation->frequency) }}</td></tr>
+                <tr><th>{{ __('messages.frequency_of_collaboration') }}</th><td>{{ $frequencyLabels[$evaluation->frequency] ?? $evaluation->frequency }}</td></tr>
             @endif
             @if($evaluation->type === 'manager')
-                <tr><th>Rehire Recommendation</th><td>{{ str_replace('_', ' ', ucwords($evaluation->rehire_recommendation, '_')) }}</td></tr>
-                <tr><th>Salary Increase</th><td>{{ str_replace('_', '-', $evaluation->salary_increase) }}%</td></tr>
-                <tr><th>Weighted Score</th><td><strong>{{ $evaluation->weightedScore() }}</strong> / 5</td></tr>
+                <tr><th>{{ __('messages.rehire_recommendation') }}</th><td>{{ $rehireLabels[$evaluation->rehire_recommendation] ?? $evaluation->rehire_recommendation }}</td></tr>
+                <tr><th>{{ __('messages.salary_increase') }}</th><td>{{ $salaryLabels[$evaluation->salary_increase] ?? $evaluation->salary_increase }}</td></tr>
+                <tr><th>{{ __('messages.weighted_score') }}</th><td><strong>{{ $evaluation->weightedScore() }}</strong> / 5</td></tr>
             @endif
             @if($evaluation->type === 'peer' && $evaluation->averageRating())
-                <tr><th>Average Rating</th><td><strong>{{ $evaluation->averageRating() }}</strong> / 5</td></tr>
+                <tr><th>{{ __('messages.average_rating') }}</th><td><strong>{{ $evaluation->averageRating() }}</strong> / 5</td></tr>
             @endif
         </table>
     </div>
@@ -62,14 +65,14 @@
 
 @if(!empty($ratingItems) && is_array($evaluation->ratings))
     <div class="card" style="margin-top:1rem;">
-        <div class="card-title">Ratings</div>
+        <div class="card-title">{{ __('messages.ratings') }}</div>
         <div class="table-wrapper">
             <table>
                 <thead>
                     <tr>
-                        <th>Item</th>
-                        @if($evaluation->type === 'manager')<th>Weight</th>@endif
-                        <th>Score</th>
+                        <th>{{ __('messages.item') }}</th>
+                        @if($evaluation->type === 'manager')<th>{{ __('messages.weight') }}</th>@endif
+                        <th>{{ __('messages.score') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -92,11 +95,11 @@
 
 @if(is_array($evaluation->responses) && !empty($evaluation->responses))
     <div class="card" style="margin-top:1rem;">
-        <div class="card-title">Written Responses</div>
+        <div class="card-title">{{ __('messages.written_responses') }}</div>
         @foreach($evaluation->responses as $qkey => $answer)
             @if(!empty($answer))
                 <div style="margin-bottom:1rem;">
-                    <strong>{{ ucwords(str_replace('_', ' ', $qkey)) }}</strong>
+                    <strong>{{ __('messages.eval_response_' . $qkey) }}</strong>
                     <div style="white-space:pre-wrap;margin-top:.25rem;">{{ $answer }}</div>
                 </div>
             @endif

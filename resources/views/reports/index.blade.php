@@ -37,7 +37,7 @@
                 <tbody>
                     @foreach($reports as $report)
                         <tr>
-                            <td class="nowrap text-bold">{{ $report->report_date->format('M d, Y (D)') }}</td>
+                            <td class="nowrap text-bold">{{ $report->report_date->translatedFormat(__('messages.date_format_with_short_weekday')) }}</td>
                             @if(auth()->user()->isAdmin())
                                 <td>{{ $report->user->name }}</td>
                             @endif

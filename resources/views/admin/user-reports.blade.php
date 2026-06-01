@@ -14,7 +14,7 @@
                 <tbody>
                     @foreach($reports as $report)
                     <tr>
-                        <td class="nowrap text-bold">{{ $report->report_date->format('M d, Y (D)') }}</td>
+                        <td class="nowrap text-bold">{{ $report->report_date->translatedFormat(__('messages.date_format_with_short_weekday')) }}</td>
                         <td>{{ Str::limit($report->summary, 80) }}</td>
                         <td><a href="{{ route('admin.show-report', $report) }}" class="btn btn-sm btn-outline">{{ __('messages.view') }}</a></td>
                     </tr>

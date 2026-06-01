@@ -38,7 +38,7 @@
                             <td class="text-bold">{{ $rotation->name }}</td>
                             <td>
                                 {{ __('messages.rotation_every') }}
-                                {{ $rotation->cycle_length > 1 ? $rotation->cycle_length . ' ' : '' }}{{ __('messages.rotation_' . $rotation->cycle_type) }}{{ $rotation->cycle_length > 1 ? 's' : '' }}
+                                {{ $rotation->cycle_length > 1 ? $rotation->cycle_length . ' ' : '' }}{{ __('messages.rotation_' . $rotation->cycle_type) }}{{ app()->getLocale() === 'en' && $rotation->cycle_length > 1 ? 's' : '' }}
                             </td>
                             <td>
                                 <div class="oncall-users-list">
@@ -47,8 +47,8 @@
                                     @endforeach
                                 </div>
                             </td>
-                            <td>{{ $rotation->start_date->format('M d, Y') }}</td>
-                            <td>{{ $rotation->end_date?->format('M d, Y') ?? __('messages.rotation_indefinite') }}</td>
+                            <td>{{ $rotation->start_date->translatedFormat(__('messages.date_format_medium')) }}</td>
+                            <td>{{ $rotation->end_date?->translatedFormat(__('messages.date_format_medium')) ?? __('messages.rotation_indefinite') }}</td>
                             <td>
                                 @if($rotation->is_active)
                                     <span class="badge badge-completed">{{ __('messages.active') }}</span>

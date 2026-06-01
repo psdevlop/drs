@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -14,6 +15,7 @@ class SetLocale
 
         if (in_array($locale, ['en', 'ko'])) {
             app()->setLocale($locale);
+            Carbon::setLocale($locale);
         }
 
         return $next($request);

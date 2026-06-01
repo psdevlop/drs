@@ -10,13 +10,14 @@
 </div>
 
 <div class="card">
-    <div class="calendar-legend">
-        <span class="legend-item"><span class="legend-dot legend-pending"></span> {{ __('messages.pending') }}</span>
-        <span class="legend-item"><span class="legend-dot legend-in-progress"></span> {{ __('messages.in_progress') }}</span>
-        <span class="legend-item"><span class="legend-dot legend-completed"></span> {{ __('messages.completed') }}</span>
-        <span class="legend-item"><span class="legend-dot legend-report"></span> {{ __('messages.reports') }}</span>
-        <span class="legend-item"><span class="legend-dot legend-oncall"></span> {{ __('messages.on_call') }}</span>
-        <span class="legend-item"><span class="legend-dot legend-holiday"></span> {{ __('messages.holiday') }}</span>
+    <div class="calendar-legend" id="scheduleLegend">
+        <button type="button" class="legend-item" data-filter="pending"><span class="legend-dot legend-pending"></span> {{ __('messages.pending') }}</button>
+        <button type="button" class="legend-item" data-filter="in_progress"><span class="legend-dot legend-in-progress"></span> {{ __('messages.in_progress') }}</button>
+        <button type="button" class="legend-item" data-filter="completed"><span class="legend-dot legend-completed"></span> {{ __('messages.completed') }}</button>
+        <button type="button" class="legend-item" data-filter="report"><span class="legend-dot legend-report"></span> {{ __('messages.reports') }}</button>
+        <button type="button" class="legend-item" data-filter="onduty"><span class="legend-dot legend-onduty"></span> {{ __('messages.on_duty') }}</button>
+        <button type="button" class="legend-item" data-filter="oncall"><span class="legend-dot legend-oncall"></span> {{ __('messages.on_call') }}</button>
+        <button type="button" class="legend-item" data-filter="holiday"><span class="legend-dot legend-holiday"></span> {{ __('messages.holiday') }}</button>
     </div>
     <div id="scheduleCalendar"></div>
 </div>
@@ -49,6 +50,48 @@
 </div>
 
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css" rel="stylesheet">
+<style>
+    #scheduleCalendar .fc-day-sat .fc-daygrid-day-number,
+    #scheduleCalendar .fc-day-sat .fc-col-header-cell-cushion {
+        color: #dc2626 !important;
+    }
+
+    #scheduleLegend .legend-item {
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 9999px;
+        padding: 4px 10px;
+        cursor: pointer;
+        font: inherit;
+        color: inherit;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    #scheduleLegend .legend-item:hover {
+        background: rgba(0, 0, 0, 0.04);
+    }
+    #scheduleLegend .legend-item.is-active {
+        background: rgba(59, 130, 246, 0.12);
+        border-color: rgba(59, 130, 246, 0.45);
+    }
+    #scheduleCalendar.filter-pending .fc-event:not(.fc-cat-pending),
+    #scheduleCalendar.filter-in_progress .fc-event:not(.fc-cat-in_progress),
+    #scheduleCalendar.filter-completed .fc-event:not(.fc-cat-completed),
+    #scheduleCalendar.filter-report .fc-event:not(.fc-cat-report),
+    #scheduleCalendar.filter-onduty .fc-event:not(.fc-cat-onduty),
+    #scheduleCalendar.filter-oncall .fc-event:not(.fc-cat-oncall),
+    #scheduleCalendar.filter-holiday .fc-event:not(.fc-cat-holiday),
+    #scheduleCalendar.filter-pending .fc-list-event:not(.fc-cat-pending),
+    #scheduleCalendar.filter-in_progress .fc-list-event:not(.fc-cat-in_progress),
+    #scheduleCalendar.filter-completed .fc-list-event:not(.fc-cat-completed),
+    #scheduleCalendar.filter-report .fc-list-event:not(.fc-cat-report),
+    #scheduleCalendar.filter-onduty .fc-list-event:not(.fc-cat-onduty),
+    #scheduleCalendar.filter-oncall .fc-list-event:not(.fc-cat-oncall),
+    #scheduleCalendar.filter-holiday .fc-list-event:not(.fc-cat-holiday) {
+        display: none !important;
+    }
+</style>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
 @if(app()->getLocale() === 'ko')
 <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.17/locales/ko.global.min.js"></script>
@@ -71,10 +114,10 @@ document.addEventListener('DOMContentLoaded', function() {
             right: isMobile ? 'dayGridMonth,listWeek' : 'dayGridMonth,timeGridWeek'
         },
         buttonText: {
-            today: locale === 'ko' ? '오늘' : 'Today',
-            month: locale === 'ko' ? '월' : 'Month',
-            week: locale === 'ko' ? '주' : 'Week',
-            list: locale === 'ko' ? '목록' : 'List'
+            today: @json(__('messages.calendar_today')),
+            month: @json(__('messages.calendar_month')),
+            week: @json(__('messages.calendar_week')),
+            list: @json(__('messages.calendar_list'))
         },
         windowResize: function(view) {
             var mobile = window.innerWidth < 768;
@@ -90,6 +133,17 @@ document.addEventListener('DOMContentLoaded', function() {
             failure: function() {
                 alert('{{ __("messages.calendar_load_error") }}');
             }
+        },
+        eventClassNames: function(arg) {
+            var props = arg.event.extendedProps;
+            if (props.type === 'task') {
+                return ['fc-cat-' + (props.status_key || 'pending')];
+            }
+            if (props.type === 'report') return ['fc-cat-report'];
+            if (props.type === 'onduty') return ['fc-cat-onduty'];
+            if (props.type === 'oncall') return ['fc-cat-oncall'];
+            if (props.type === 'holiday') return ['fc-cat-holiday'];
+            return [];
         },
         eventClick: function(info) {
             if (info.event.url) {
@@ -115,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 holidayMeta.style.display = 'block';
                 tooltip.querySelector('.tooltip-holiday-date').textContent = props.date;
                 tooltip.querySelector('.tooltip-holiday-reason').textContent = props.reason;
-            } else if (props.type === 'oncall') {
+            } else if (props.type === 'oncall' || props.type === 'onduty') {
                 oncallMeta.style.display = 'block';
                 tooltip.querySelector('.tooltip-oncall-date').textContent = props.date;
                 tooltip.querySelector('.tooltip-oncall-users').textContent = props.users;
@@ -150,6 +204,35 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     calendar.render();
+
+    var legend = document.getElementById('scheduleLegend');
+    var filterClasses = ['filter-pending','filter-in_progress','filter-completed','filter-report','filter-onduty','filter-oncall','filter-holiday'];
+    var defaultView = isMobile ? 'listWeek' : 'dayGridMonth';
+    var activeFilter = null;
+
+    legend.addEventListener('click', function(e) {
+        var btn = e.target.closest('.legend-item');
+        if (!btn) return;
+        var filter = btn.dataset.filter;
+
+        if (activeFilter === filter) {
+            activeFilter = null;
+        } else {
+            activeFilter = filter;
+        }
+
+        legend.querySelectorAll('.legend-item').forEach(function(el) {
+            el.classList.toggle('is-active', el.dataset.filter === activeFilter);
+        });
+
+        filterClasses.forEach(function(cls) { calendarEl.classList.remove(cls); });
+        if (activeFilter) {
+            calendarEl.classList.add('filter-' + activeFilter);
+            calendar.changeView('listYear');
+        } else {
+            calendar.changeView(defaultView);
+        }
+    });
 });
 </script>
 @endsection

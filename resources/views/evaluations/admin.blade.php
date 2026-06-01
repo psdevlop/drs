@@ -1,25 +1,25 @@
 @extends('layouts.app')
-@section('title', 'Evaluations Overview')
+@section('title', __('messages.evaluations_overview'))
 @section('content')
 <div class="page-header">
-    <h1>Evaluations — Admin Overview</h1>
-    <a href="{{ route('evaluations.index') }}" class="btn btn-outline">My Evaluations</a>
+    <h1>{{ __('messages.evaluations_admin_overview') }}</h1>
+    <a href="{{ route('evaluations.index') }}" class="btn btn-outline">{{ __('messages.my_evaluations') }}</a>
 </div>
 
 <div class="card">
-    <div class="card-title">Calibration Matrix</div>
-    <p class="text-muted text-xs">Composite = Manager 50% + Peer Avg 30% + Self 20%. Grades: S 4.5–5.0 · A 4.0–4.4 · B 3.5–3.9 · C 3.0–3.4 · D &lt; 3.0</p>
+    <div class="card-title">{{ __('messages.calibration_matrix') }}</div>
+    <p class="text-muted text-xs">{{ __('messages.calibration_desc') }}</p>
     <div class="table-wrapper">
         <table>
             <thead>
                 <tr>
-                    <th>Intern</th>
-                    <th>Role</th>
-                    <th>Self (20%)</th>
-                    <th>Peer Avg (30%)</th>
-                    <th>Manager (50%)</th>
-                    <th>Composite</th>
-                    <th>Grade</th>
+                    <th>{{ __('messages.intern') }}</th>
+                    <th>{{ __('messages.role') }}</th>
+                    <th>{{ __('messages.self_20') }}</th>
+                    <th>{{ __('messages.peer_avg_30') }}</th>
+                    <th>{{ __('messages.manager_50') }}</th>
+                    <th>{{ __('messages.composite') }}</th>
+                    <th>{{ __('messages.grade') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -31,14 +31,14 @@
                         </td>
                         <td>{{ $row['intern']->internRoleLabel() }}</td>
                         <td>{{ $row['self_score'] ?? '—' }}</td>
-                        <td>{{ $row['peer_avg'] ?? '—' }} <span class="text-muted text-xs">({{ $row['peers']->count() }} reviews)</span></td>
+                        <td>{{ $row['peer_avg'] ?? '—' }} <span class="text-muted text-xs">({{ __('messages.reviews_count', ['count' => $row['peers']->count()]) }})</span></td>
                         <td>{{ $row['manager_score'] ?? '—' }}</td>
                         <td><strong>{{ $row['composite'] ?? '—' }}</strong></td>
                         <td>
                             @if($row['grade'])
                                 <span class="badge badge-{{ in_array($row['grade'], ['S','A']) ? 'success' : (in_array($row['grade'], ['B','C']) ? 'warning' : 'danger') }}">{{ $row['grade'] }}</span>
                             @else
-                                <span class="text-muted">incomplete</span>
+                                <span class="text-muted">{{ __('messages.eval_status_incomplete') }}</span>
                             @endif
                         </td>
                     </tr>
@@ -50,15 +50,15 @@
 
 @foreach($matrix as $row)
     <div class="card" style="margin-top:1rem;">
-        <div class="card-title">{{ $row['intern']->name }} — All Submissions</div>
+        <div class="card-title">{{ __('messages.all_submissions', ['name' => $row['intern']->name]) }}</div>
         <div class="table-wrapper">
             <table>
                 <thead>
                     <tr>
-                        <th>Type</th>
-                        <th>Submitted By</th>
-                        <th>When</th>
-                        <th>Score</th>
+                        <th>{{ __('messages.type') }}</th>
+                        <th>{{ __('messages.submitted_by') }}</th>
+                        <th>{{ __('messages.when') }}</th>
+                        <th>{{ __('messages.score') }}</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -71,11 +71,11 @@
 
                     @if($row['self'])
                         <tr>
-                            <td><span class="badge">Self</span></td>
+                            <td><span class="badge">{{ __('messages.self') }}</span></td>
                             <td>
                                 {{ $row['self']->evaluator->name }}
                                 @if($row['self']->isConfirmed())
-                                    <span class="badge" style="background:#dbeafe;color:#1e40af;margin-left:6px;">Confirmed</span>
+                                    <span class="badge" style="background:#dbeafe;color:#1e40af;margin-left:6px;">{{ __('messages.eval_status_confirmed') }}</span>
                                 @endif
                             </td>
                             <td>{{ $row['self']->submitted_at?->format('Y-m-d H:i') }}</td>
@@ -83,16 +83,16 @@
                             <td>{!! $actionsCell($row['self']) !!}</td>
                         </tr>
                     @else
-                        <tr><td colspan="5" class="text-muted">Self-assessment not yet submitted</td></tr>
+                        <tr><td colspan="5" class="text-muted">{{ __('messages.self_assessment_not_submitted') }}</td></tr>
                     @endif
 
                     @forelse($row['peers'] as $peer)
                         <tr>
-                            <td><span class="badge">Peer</span></td>
+                            <td><span class="badge">{{ __('messages.peer') }}</span></td>
                             <td>
                                 {{ $peer->evaluator->name }}
                                 @if($peer->isConfirmed())
-                                    <span class="badge" style="background:#dbeafe;color:#1e40af;margin-left:6px;">Confirmed</span>
+                                    <span class="badge" style="background:#dbeafe;color:#1e40af;margin-left:6px;">{{ __('messages.eval_status_confirmed') }}</span>
                                 @endif
                             </td>
                             <td>{{ $peer->submitted_at?->format('Y-m-d H:i') }}</td>
@@ -100,16 +100,16 @@
                             <td>{!! $actionsCell($peer) !!}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="text-muted">No peer reviews yet</td></tr>
+                        <tr><td colspan="5" class="text-muted">{{ __('messages.no_peer_reviews_yet') }}</td></tr>
                     @endforelse
 
                     @forelse($row['managers'] as $manager)
                         <tr>
-                            <td><span class="badge" style="background:#fef3c7;color:#92400e;">{{ $manager->evaluator->teamRoleLabel() ?? 'Superior' }}</span></td>
+                            <td><span class="badge" style="background:#fef3c7;color:#92400e;">{{ $manager->evaluator->teamRoleLabel() ?? __('messages.superior') }}</span></td>
                             <td>
                                 {{ $manager->evaluator->name }}
                                 @if($manager->isConfirmed())
-                                    <span class="badge" style="background:#dbeafe;color:#1e40af;margin-left:6px;">Confirmed</span>
+                                    <span class="badge" style="background:#dbeafe;color:#1e40af;margin-left:6px;">{{ __('messages.eval_status_confirmed') }}</span>
                                 @endif
                             </td>
                             <td>{{ $manager->submitted_at?->format('Y-m-d H:i') }}</td>
@@ -117,7 +117,7 @@
                             <td>{!! $actionsCell($manager) !!}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="text-muted">No superior evaluations yet</td></tr>
+                        <tr><td colspan="5" class="text-muted">{{ __('messages.no_superior_evaluations_yet') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

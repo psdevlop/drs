@@ -46,14 +46,14 @@
                 <tbody>
                     @foreach($schedule as $day)
                         <tr class="{{ $day['date']->isToday() ? 'preview-today' : '' }} {{ $day['is_holiday'] ? 'preview-weekend' : '' }}">
-                            <td class="text-bold">{{ $day['date']->format('M d, Y') }}</td>
-                            <td>{{ $day['date']->format('l') }}</td>
+                            <td class="text-bold">{{ $day['date']->translatedFormat(__('messages.date_format_medium')) }}</td>
+                            <td>{{ $day['date']->translatedFormat('l') }}</td>
                             <td>
                                 @if(count($day['users']))
                                     @php $picId = $day['pic_user_id'] ?? null; @endphp
                                     <div class="oncall-users-list">
                                         @foreach($day['users'] as $u)
-                                            <span class="badge {{ $picId !== null && (int)$picId === (int)$u['id'] ? 'badge-pic' : 'badge-oncall' }}">{{ $u['name'] }}{{ $picId !== null && (int)$picId === (int)$u['id'] ? ' (PIC)' : '' }}</span>
+                                            <span class="badge {{ $picId !== null && (int)$picId === (int)$u['id'] ? 'badge-pic' : 'badge-oncall' }}">{{ $u['name'] }}{{ $picId !== null && (int)$picId === (int)$u['id'] ? ' (' . __('messages.pic_short') . ')' : '' }}</span>
                                         @endforeach
                                     </div>
                                 @else
@@ -61,14 +61,15 @@
                                 @endif
                             </td>
                             <td>
-                                @if(count($day['users']) > 0 && $day['date']->gte($today))
+                                @php $picOptions = $day['pic_candidates'] ?? $day['users']; @endphp
+                                @if(count($picOptions) > 0 && $day['date']->gte($today))
                                     <form action="{{ route('oncall.update-pic-date') }}" method="POST" style="display:inline;">
                                         @csrf @method('PATCH')
                                         <input type="hidden" name="date" value="{{ $day['date']->format('Y-m-d') }}">
                                         <select name="pic_user_id" onchange="this.form.submit()" class="status-select {{ $day['pic'] ? 'status-in_progress' : '' }}">
                                             <option value="">-- {{ __('messages.select') }} --</option>
                                             @php $currentPicId = $day['pic_user_id'] ?? null; @endphp
-                                            @foreach($day['users'] as $u)
+                                            @foreach($picOptions as $u)
                                                 <option value="{{ $u['id'] }}" {{ $currentPicId !== null && (int)$currentPicId === (int)$u['id'] ? 'selected' : '' }}>{{ $u['name'] }}</option>
                                             @endforeach
                                         </select>

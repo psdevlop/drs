@@ -56,12 +56,12 @@
                 <tbody>
                     @foreach($preview as $day)
                         <tr class="{{ $day['date']->isToday() ? 'preview-today' : '' }} {{ $day['date']->isWeekend() ? 'preview-weekend' : '' }}">
-                            <td class="text-bold">{{ $day['date']->format('M d, Y') }}</td>
-                            <td>{{ $day['date']->format('l') }}</td>
+                            <td class="text-bold">{{ $day['date']->translatedFormat(__('messages.date_format_medium')) }}</td>
+                            <td>{{ $day['date']->translatedFormat('l') }}</td>
                             <td>
                                 @if(count($day['users']))
                                     @foreach($day['users'] as $u)
-                                        <span class="badge {{ $u['is_pic'] ? 'badge-pic' : 'badge-oncall' }}">{{ $u['name'] }}@if($u['is_pic']) (PIC)@endif</span>
+                                        <span class="badge {{ $u['is_pic'] ? 'badge-pic' : 'badge-oncall' }}">{{ $u['name'] }}@if($u['is_pic']) ({{ __('messages.pic_short') }})@endif</span>
                                     @endforeach
                                 @else
                                     <span class="text-muted text-sm">{{ __('messages.holiday') }}</span>

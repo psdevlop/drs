@@ -2,7 +2,7 @@
 @section('title', __('messages.edit_report'))
 @section('content')
 <div class="page-header">
-    <h1>{{ __('messages.edit_report') }} - {{ $report->report_date->format('M d, Y') }}</h1>
+    <h1>{{ __('messages.edit_report') }} - {{ $report->report_date->translatedFormat(__('messages.date_format_medium')) }}</h1>
     <a href="{{ route('reports.index') }}" class="btn btn-outline">{{ __('messages.back_to_reports') }}</a>
 </div>
 
