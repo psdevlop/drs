@@ -30,23 +30,14 @@ class CalendarController extends Controller
         $userId = $user->id;
         $events = [];
 
-        // Tasks — visible to all users so the schedule view is shared
-        $taskQuery = Task::with(['assignees', 'user'])
-            ->where(function ($q) {
-                $q->whereNotNull('start_date')
-                  ->orWhereNotNull('due_date')
-                  ->orWhereNotNull('expected_end_date');
-            });
+        // Tasks — visible to all users so the schedule view is shared.
+        // Every task is rendered: undated tasks (no start/due/expected) fall
+        // back to their creation date so newly created pending/in-progress
+        // tasks still appear instead of being silently dropped.
+        $taskQuery = Task::with(['assignees', 'user']);
 
-        if ($request->filled('start') && $request->filled('end')) {
-            $start = $request->start;
-            $end = $request->end;
-            $taskQuery->where(function ($q) use ($start, $end) {
-                $q->whereBetween('start_date', [$start, $end])
-                  ->orWhereBetween('due_date', [$start, $end])
-                  ->orWhereBetween('expected_end_date', [$start, $end]);
-            });
-        }
+        $rangeStart = $request->filled('start') ? $request->start : null;
+        $rangeEnd = $request->filled('end') ? $request->end : null;
 
         $colors = [
             'pending' => ['bg' => '#f59e0b', 'border' => '#d97706'],
@@ -57,6 +48,16 @@ class CalendarController extends Controller
         foreach ($taskQuery->get() as $task) {
             $startDate = $task->start_date?->format('Y-m-d') ?? $task->created_at->format('Y-m-d');
             $endDate = $task->expected_end_date?->format('Y-m-d') ?? $task->due_date?->format('Y-m-d') ?? $startDate;
+            // Guard against an end earlier than the start (e.g. a task created
+            // after its due date) which FullCalendar would otherwise drop.
+            if ($endDate < $startDate) {
+                $endDate = $startDate;
+            }
+            // Overlap test against the requested window so multi-day tasks that
+            // span the view — but whose individual dates fall outside it — still show.
+            if ($rangeStart && $rangeEnd && ($startDate > $rangeEnd || $endDate < $rangeStart)) {
+                continue;
+            }
             $color = $colors[$task->status] ?? $colors['pending'];
 
             $events[] = [
