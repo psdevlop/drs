@@ -9,9 +9,13 @@ use App\Models\TaskComment;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class TaskController extends Controller
 {
+    private const COMMENT_EDIT_WINDOW_MINUTES = 15;
+    private const ALLOWED_REACTIONS = ['👍', '❤️', '😄', '🎉', '👀'];
+
     public function index(Request $request)
     {
         $userId = $request->user()->id;
@@ -102,7 +106,11 @@ class TaskController extends Controller
     public function show(Task $task)
     {
         $this->authorizeTask($task);
-        $task->load(['user', 'assignees', 'requester', 'attachments', 'comments.user', 'comments.attachments']);
+        $task->load([
+            'user', 'assignees', 'requester', 'attachments',
+            'comments.user', 'comments.attachments', 'comments.reactions.user',
+            'comments.replies.user', 'comments.replies.attachments', 'comments.replies.reactions.user',
+        ]);
         return view('tasks.show', compact('task'));
     }
 
@@ -244,12 +252,18 @@ class TaskController extends Controller
 
         $validated = $request->validate([
             'body' => ['required', 'string', 'max:5000'],
+            'parent_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('task_comments', 'id')->where(fn ($q) => $q->where('task_id', $task->id)->whereNull('parent_id')),
+            ],
             'attachments' => ['nullable', 'array'],
             'attachments.*' => ['file', 'max:10240'],
         ]);
 
         $comment = $task->comments()->create([
             'user_id' => auth()->id(),
+            'parent_id' => $validated['parent_id'] ?? null,
             'body' => $validated['body'],
         ]);
 
@@ -264,8 +278,23 @@ class TaskController extends Controller
 
         $notifiedIds = [auth()->id()];
 
+        // Notify parent comment author on replies
+        if ($comment->parent_id) {
+            $parentAuthorId = $comment->parent->user_id ?? null;
+            if ($parentAuthorId && !in_array($parentAuthorId, $notifiedIds)) {
+                Notification::create([
+                    'user_id' => $parentAuthorId,
+                    'type' => 'task_comment',
+                    'title' => __('messages.notif_task_reply_title'),
+                    'message' => __('messages.notif_task_reply_message', ['task' => $task->title, 'user' => auth()->user()->name]),
+                    'link' => route('tasks.show', $task),
+                ]);
+                $notifiedIds[] = $parentAuthorId;
+            }
+        }
+
         // Notify task owner
-        if ($task->user_id !== auth()->id()) {
+        if ($task->user_id !== auth()->id() && !in_array($task->user_id, $notifiedIds)) {
             Notification::create([
                 'user_id' => $task->user_id,
                 'type' => 'task_comment',
@@ -303,6 +332,72 @@ class TaskController extends Controller
         }
 
         return redirect()->route('tasks.show', $task)->with('success', __('messages.comment_added'));
+    }
+
+    public function updateComment(Request $request, Task $task, TaskComment $comment)
+    {
+        $this->authorizeTask($task);
+
+        if ($comment->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if ($comment->created_at->diffInMinutes(now()) > self::COMMENT_EDIT_WINDOW_MINUTES) {
+            return redirect()->route('tasks.show', $task)->with('error',
+                __('messages.comment_edit_window_expired', ['minutes' => self::COMMENT_EDIT_WINDOW_MINUTES])
+            );
+        }
+
+        $validated = $request->validate([
+            'body' => ['required', 'string', 'max:5000'],
+        ]);
+
+        $comment->update(['body' => $validated['body']]);
+
+        return redirect()->route('tasks.show', $task)->with('success', __('messages.comment_updated'));
+    }
+
+    public function toggleReaction(Request $request, Task $task, TaskComment $comment)
+    {
+        $this->authorizeTask($task);
+
+        $validated = $request->validate([
+            'emoji' => ['required', 'string', 'in:' . implode(',', self::ALLOWED_REACTIONS)],
+        ]);
+
+        $existing = $comment->reactions()
+            ->where('user_id', auth()->id())
+            ->where('emoji', $validated['emoji'])
+            ->first();
+
+        if ($existing) {
+            $existing->delete();
+        } else {
+            $comment->reactions()->create([
+                'user_id' => auth()->id(),
+                'emoji' => $validated['emoji'],
+            ]);
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            $comment->load('reactions.user');
+            $grouped = $comment->reactions->groupBy('emoji');
+            $myId = auth()->id();
+
+            $payload = collect(self::ALLOWED_REACTIONS)->map(function ($emoji) use ($grouped, $myId) {
+                $rows = $grouped->get($emoji, collect());
+                return [
+                    'emoji' => $emoji,
+                    'count' => $rows->count(),
+                    'mine' => $rows->contains(fn ($r) => $r->user_id === $myId),
+                    'names' => $rows->map(fn ($r) => $r->user->name ?? '')->filter()->values()->all(),
+                ];
+            })->all();
+
+            return response()->json(['reactions' => $payload]);
+        }
+
+        return redirect()->route('tasks.show', $task);
     }
 
     public function destroyComment(Task $task, TaskComment $comment)

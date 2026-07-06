@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class TaskComment extends Model
 {
-    protected $fillable = ['task_id', 'user_id', 'body'];
+    protected $fillable = ['task_id', 'parent_id', 'user_id', 'body'];
 
     public function task()
     {
@@ -21,5 +21,20 @@ class TaskComment extends Model
     public function attachments()
     {
         return $this->hasMany(TaskCommentAttachment::class);
+    }
+
+    public function reactions()
+    {
+        return $this->hasMany(TaskCommentReaction::class);
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(TaskComment::class, 'parent_id');
+    }
+
+    public function replies()
+    {
+        return $this->hasMany(TaskComment::class, 'parent_id')->orderBy('created_at');
     }
 }

@@ -85,7 +85,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.update-status');
     Route::delete('tasks/attachments/{attachment}', [TaskController::class, 'destroyAttachment'])->name('tasks.attachments.destroy');
     Route::post('tasks/{task}/comments', [TaskController::class, 'storeComment'])->name('tasks.comments.store');
+    Route::put('tasks/{task}/comments/{comment}', [TaskController::class, 'updateComment'])->name('tasks.comments.update');
     Route::delete('tasks/{task}/comments/{comment}', [TaskController::class, 'destroyComment'])->name('tasks.comments.destroy');
+    Route::post('tasks/{task}/comments/{comment}/reactions', [TaskController::class, 'toggleReaction'])->name('tasks.comments.reactions.toggle');
 
     // Daily Reports
     Route::resource('reports', DailyReportController::class);

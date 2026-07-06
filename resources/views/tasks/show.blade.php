@@ -168,50 +168,60 @@
 
     @if($task->comments->count())
         <div class="comments-list">
-            @foreach($task->comments as $comment)
-                <div class="comment-item">
-                    <div class="comment-header">
-                        <div class="comment-author">
-                            @if($comment->user->avatar)
-                                <img src="{{ asset('storage/' . $comment->user->avatar) }}" alt="" class="comment-avatar">
-                            @else
-                                <div class="comment-avatar-placeholder">{{ strtoupper(substr($comment->user->name, 0, 1)) }}</div>
-                            @endif
-                            <div>
-                                <span class="comment-name">{{ $comment->user->name }}</span>
-                                <span class="comment-time">{{ $comment->created_at->diffForHumans() }}</span>
-                            </div>
-                        </div>
-                        @if($comment->user_id === auth()->id())
-                            <form action="{{ route('tasks.comments.destroy', [$task, $comment]) }}" method="POST" onsubmit="return confirm('{{ __('messages.delete_comment_confirm') }}')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger">{{ __('messages.delete') }}</button>
-                            </form>
-                        @endif
-                    </div>
-                    <div class="comment-body">{!! nl2br(preg_replace('~(https?://[^\s<]+)~i', '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>', e($comment->body))) !!}</div>
-                    @if($comment->attachments->count())
-                        <div class="comment-attachments">
-                            @foreach($comment->attachments as $attachment)
-                                <div class="comment-attachment">
-                                    @if(in_array(strtolower(pathinfo($attachment->original_name, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif', 'webp']))
-                                        <a href="{{ asset('storage/' . $attachment->file_path) }}" target="_blank">
-                                            <img src="{{ asset('storage/' . $attachment->file_path) }}" alt="{{ $attachment->original_name }}" class="comment-attachment-image">
-                                        </a>
-                                    @else
-                                        <a href="{{ asset('storage/' . $attachment->file_path) }}" target="_blank" class="comment-attachment-file">
-                                            <span class="attachment-icon">&#128196;</span> {{ $attachment->original_name }}
-                                        </a>
-                                    @endif
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
+            @foreach($task->comments->whereNull('parent_id')->sortByDesc('created_at') as $comment)
+                @include('tasks._comment', ['comment' => $comment, 'task' => $task, 'canReply' => true])
             @endforeach
         </div>
     @else
         <p class="empty-state-inline">{{ __('messages.no_comments') }}</p>
     @endif
 </div>
+
+<script>
+function toggleCommentEdit(id, editing) {
+    const body = document.querySelector(`[data-comment-body="${id}"]`);
+    const form = document.querySelector(`[data-comment-edit="${id}"]`);
+    if (!body || !form) return;
+    body.style.display = editing ? 'none' : '';
+    form.style.display = editing ? '' : 'none';
+    if (editing) form.querySelector('textarea')?.focus();
+}
+function toggleCommentReply(id, open) {
+    const form = document.querySelector(`[data-comment-reply="${id}"]`);
+    if (!form) return;
+    form.style.display = open ? '' : 'none';
+    if (open) form.querySelector('textarea')?.focus();
+}
+function handleReactionSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const btn = form.querySelector('button');
+    if (btn.disabled) return false;
+    btn.disabled = true;
+    const data = new FormData(form);
+    fetch(form.action, {
+        method: 'POST',
+        body: data,
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+        credentials: 'same-origin',
+    })
+        .then(r => r.ok ? r.json() : Promise.reject(r))
+        .then(payload => {
+            const container = form.closest('.comment-reactions');
+            if (!container || !payload.reactions) return;
+            payload.reactions.forEach(r => {
+                const b = container.querySelector(`[data-reaction-emoji="${r.emoji}"]`);
+                if (!b) return;
+                b.classList.toggle('is-mine', !!r.mine);
+                b.classList.toggle('is-empty', !r.count);
+                if (r.count) { b.setAttribute('title', r.names.join(', ')); } else { b.removeAttribute('title'); }
+                const c = b.querySelector('.comment-reaction-count');
+                if (c) { c.textContent = r.count || ''; c.toggleAttribute('hidden', !r.count); }
+            });
+        })
+        .catch(() => { form.submit(); })
+        .finally(() => { btn.disabled = false; });
+    return false;
+}
+</script>
 @endsection
