@@ -32,7 +32,6 @@ final class NepaliGovernmentHolidays
             ['date' => '2026-08-02', 'reason' => 'Public Holiday'],
             ['date' => '2026-08-09', 'reason' => 'Public Holiday'],
             ['date' => '2026-08-16', 'reason' => 'Public Holiday'],
-            ['date' => '2026-08-23', 'reason' => 'Raksha Bandhan'],
             ['date' => '2026-08-28', 'reason' => 'Raksha Bandhan'],
             ['date' => '2026-08-29', 'reason' => 'Public Holiday'],
             ['date' => '2026-08-30', 'reason' => 'Shree Krishna Janmasthami Brata (Moharatri)'],
