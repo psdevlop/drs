@@ -61,6 +61,12 @@
                         @endif
                     </ul>
                 </li>
+                <li class="navbar-dropdown">
+                    <a href="{{ route('seo.index') }}" class="{{ request()->routeIs('seo.*') ? 'active' : '' }}">{{ __('messages.seo') }} <span class="caret">&#9662;</span></a>
+                    <ul class="navbar-submenu">
+                        <li><a href="{{ route('seo.index') }}">{{ __('messages.seo_performance') }}</a></li>
+                    </ul>
+                </li>
                 @if(auth()->user()->isAdmin())
                     <li><a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.*') && !request()->routeIs('admin.services.*') ? 'active' : '' }}">{{ __('messages.admin') }}</a></li>
                 @endif

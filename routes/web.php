@@ -11,6 +11,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnCallController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TaskController;
@@ -138,6 +139,10 @@ Route::middleware('auth')->group(function () {
     // Services (view only for all users)
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
     Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
+
+    // SEO — Search Console performance
+    Route::get('/seo', [SeoController::class, 'index'])->name('seo.index');                // list of all links
+    Route::get('/seo/performance', [SeoController::class, 'performance'])->name('seo.performance'); // combined graphs (all links)
 
     // Admin routes
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
