@@ -255,6 +255,7 @@
             setInterval(poll, POLL_INTERVAL);
         })();
     </script>
+    @include('partials.chat-widget')
     @endauth
     @hasSection('ckeditor')
     <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>

@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DailyReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EvaluationController;
@@ -138,6 +139,21 @@ Route::middleware('auth')->group(function () {
     // Services (view only for all users)
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
     Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
+
+    // Chat (BangBang integration)
+    Route::prefix('chat')->name('chat.')->group(function () {
+        Route::get('/config', [ChatController::class, 'config'])->name('config');
+        Route::get('/rooms', [ChatController::class, 'rooms'])->name('rooms');
+        Route::post('/rooms', [ChatController::class, 'createRoom'])->name('rooms.create');
+        Route::post('/support/start', [ChatController::class, 'startSupport'])->name('support.start');
+        Route::get('/rooms/{roomId}/messages', [ChatController::class, 'messages'])->whereNumber('roomId')->name('messages');
+        Route::post('/rooms/{roomId}/messages', [ChatController::class, 'send'])->whereNumber('roomId')->name('send');
+        Route::get('/unread', [ChatController::class, 'unread'])->name('unread');
+        Route::get('/users', [ChatController::class, 'users'])->name('users');
+        Route::post('/direct/{externalId}', [ChatController::class, 'direct'])->name('direct');
+        Route::delete('/rooms/{roomId}', [ChatController::class, 'closeRoom'])->whereNumber('roomId')->name('rooms.close');
+        Route::post('/support/init', [ChatController::class, 'supportInit'])->name('support.init');
+    });
 
     // Admin routes
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
