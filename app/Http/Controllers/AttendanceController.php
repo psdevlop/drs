@@ -115,9 +115,13 @@ class AttendanceController extends Controller
             ->whereDate('date', '<', $today)
             ->get()
             ->each(function (Attendance $att) {
+                $checkOut = $att->date->copy()->setTime(18, 30);
+                if ($checkOut->lte($att->check_in)) {
+                    $checkOut = $att->check_in->copy()->addHours(8);
+                }
                 $att->update([
-                    'check_out' => $att->check_in->copy()->addHours(8)->addMinutes(16),
-                    'total_hours' => 8.27,
+                    'check_out' => $checkOut,
+                    'total_hours' => round($att->check_in->diffInMinutes($checkOut) / 60, 2),
                 ]);
             });
     }
